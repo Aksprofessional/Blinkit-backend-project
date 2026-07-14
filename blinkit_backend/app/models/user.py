@@ -4,6 +4,7 @@ from enum import Enum as pyEnum
 from sqlalchemy.orm import relationship
 import uuid
 from app.models.orders import order
+from app.models.cart import Cart
 class User_role(str,pyEnum):
     ADMIN="admin"
     CUSTOMER="customer"
@@ -25,4 +26,10 @@ class User(Base):
     orders=relationship(
         order,
         back_populates='users'
+    )
+
+    cart=relationship(
+        Cart,
+        back_populates='users',
+        cascade="all, delete-orphan"
     )

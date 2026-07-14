@@ -10,7 +10,7 @@ class Products(Base):
     id=Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name= Column(String, unique=True)
     price= Column(Float,nullable=False)
-    quantity= Column(Integer,nullable=False)
+    stock_quantity= Column(Integer,nullable=False)
     image= Column(String,nullable=False)
     description= Column(String)
     category_id= Column(Integer, ForeignKey('category.id'),nullable=False)
