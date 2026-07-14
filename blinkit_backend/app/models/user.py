@@ -4,6 +4,7 @@ from enum import Enum as pyEnum
 from sqlalchemy.orm import relationship
 import uuid
 from app.models.orders import order
+from app.models.delivery_address import delivery_address
 class User_role(str,pyEnum):
     ADMIN="admin"
     CUSTOMER="customer"
@@ -17,12 +18,19 @@ class User(Base):
     name= Column(String,nullable=False)
     mail=Column(String, unique=True,nullable=False)
     hashed_password= Column(String,nullable=False)
-    created_at= Column(DateTime,server_default=func.nowa())
+    created_at= Column(DateTime,server_default=func.now())
     blinkit_money=Column(Integer,nullable=True)
     role= Column(Enum(User_role , name="user_role_enum"), nullable=False, default=User_role.CUSTOMER)
 
     #ralationship
     orders=relationship(
         order,
-        back_populates='users'
+        back_populates='users',
+        cascade="all, delete-orphan"
+    )
+
+    delivery_addresses=relationship(
+        delivery_address,
+        back_populates='users',
+        cascade="all, delete-orphan"
     )
