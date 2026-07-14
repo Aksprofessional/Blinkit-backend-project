@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 import uuid
 from app.models.orders import order
 from app.models.delivery_address import delivery_address
+from app.models.cart import Cart
 class User_role(str,pyEnum):
     ADMIN="admin"
     CUSTOMER="customer"
@@ -31,6 +32,11 @@ class User(Base):
 
     delivery_addresses=relationship(
         delivery_address,
+        back_populates='users',
+        cascade="all, delete-orphan"
+    )
+    cart=relationship(
+        Cart,
         back_populates='users',
         cascade="all, delete-orphan"
     )
