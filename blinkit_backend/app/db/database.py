@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from app.core.config import settings
+from app.core.config import Setting
 
 
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    Setting.DATABASE_URL,
     pool_size=20,  # Phase 1.5: 20 persistent connections (supports 100+ users)
     max_overflow=30,  # Max 50 total connections (supports 300-500 concurrent users)
     pool_recycle=3600,
