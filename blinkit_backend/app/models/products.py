@@ -1,29 +1,35 @@
-from sqlalchemy import Column,Integer,UUID,String, DECIMAL,ForeignKey
+from sqlalchemy import Column,UUID,String,ForeignKey,Boolean,DateTime
 from app.db.database import Base
 from sqlalchemy.orm import relationship
-from app.models.category import Category
-from app.models.order_items import order_items
 import uuid
 
 class Products(Base):
     __tablename__="products"
     id=Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name= Column(String, unique=True)
-    price= Column(DECIMAL(10,2),nullable=False)
-    stock_quantity= Column(Integer,nullable=False)
     image= Column(String,nullable=False)
+    company=Column(String,nullable=False)
     description= Column(String)
-    category_id= Column(Integer, ForeignKey('category.id'),nullable=False)
+    category_id= Column(UUID(as_uuid=True), ForeignKey('category.id',ondelete='RESTRICT'),nullable=False)
+    isdeleted= Column(Boolean,default=False,nullable=False)
+    delete_timestamp=Column(DateTime(timezone=True),nullable=True)
+
+
+    
 
     #relationship
     category= relationship(
-        Category,
+        'Category',
         back_populates='products'
     )
 
     order_item=relationship(
-        order_items,
-        back_populates='products',
-        cascade="all, delete-orphan",
+        'order_items',
+        back_populates='products'
 
+    )
+
+    product_variants=relationship(
+        'product_variant',
+        back_populates='product'
     )

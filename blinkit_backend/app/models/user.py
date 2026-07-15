@@ -1,11 +1,8 @@
 from app.db.database import Base
-from sqlalchemy import Column,Integer,String,DateTime,Enum,UUID,func
+from sqlalchemy import Column,Integer,String,DateTime,Enum,UUID,func,Boolean
 from enum import Enum as pyEnum
 from sqlalchemy.orm import relationship
 import uuid
-from app.models.orders import order
-from app.models.delivery_address import delivery_address
-from app.models.cart import Cart
 class User_role(str,pyEnum):
     ADMIN="admin"
     CUSTOMER="customer"
@@ -22,21 +19,20 @@ class User(Base):
     created_at= Column(DateTime,server_default=func.now())
     blinkit_money=Column(Integer,nullable=True)
     role= Column(Enum(User_role , name="user_role_enum"), nullable=False, default=User_role.CUSTOMER)
+    isdeleted= Column(Boolean,default=False,nullable=False)
+    delete_timestamp=Column(DateTime(timezone=True),nullable=True)
 
     #ralationship
     orders=relationship(
-        order,
+        'order',
         back_populates='users',
-        cascade="all, delete-orphan"
     )
 
     delivery_addresses=relationship(
-        delivery_address,
+        'delivery_address',
         back_populates='users',
-        cascade="all, delete-orphan"
     )
     cart=relationship(
-        Cart,
+        'Cart',
         back_populates='users',
-        cascade="all, delete-orphan"
     )
