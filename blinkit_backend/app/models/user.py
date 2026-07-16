@@ -2,6 +2,7 @@ from app.db.database import Base
 from sqlalchemy import Column,Integer,String,DateTime,Enum,UUID,func,Boolean
 from enum import Enum as pyEnum
 from sqlalchemy.orm import relationship
+
 import uuid
 class User_role(str,pyEnum):
     ADMIN="admin"
@@ -23,7 +24,7 @@ class User(Base):
     delete_timestamp=Column(DateTime(timezone=True),nullable=True)
 
     #ralationship
-    orders=relationship(
+    orders = relationship(
         'order',
         back_populates='users',
     )

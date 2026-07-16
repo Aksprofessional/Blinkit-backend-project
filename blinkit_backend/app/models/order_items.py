@@ -16,7 +16,6 @@ class order_items(Base):
     bought_price=Column(DECIMAL(10,2),nullable=False)
 
     #relationship
-    
     orders=relationship(
         'order',
         back_populates='order_item'
