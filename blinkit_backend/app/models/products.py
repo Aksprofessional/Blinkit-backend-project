@@ -23,11 +23,7 @@ class Products(Base):
         back_populates='products'
     )
 
-    order_item=relationship(
-        'order_items',
-        back_populates='products'
-
-    )
+    
 
     product_variants=relationship(
         'product_variant',
