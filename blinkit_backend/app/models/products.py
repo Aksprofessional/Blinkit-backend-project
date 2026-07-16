@@ -8,9 +8,9 @@ class Products(Base):
     id=Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name= Column(String, unique=True)
     image= Column(String,nullable=False)
-    company=Column(String,nullable=False)
     description= Column(String)
-    category_id= Column(UUID(as_uuid=True), ForeignKey('category.id',ondelete='RESTRICT'),nullable=False)
+    brand_id= Column(UUID(as_uuid=True),ForeignKey('brands.id'),nullable=False)
+    sub_category_id= Column(UUID(as_uuid=True), ForeignKey('subcategory.id'),nullable=False)
     isdeleted= Column(Boolean,default=False,nullable=False)
     delete_timestamp=Column(DateTime(timezone=True),nullable=True)
 
@@ -18,18 +18,17 @@ class Products(Base):
     
 
     #relationship
-    category= relationship(
-        'Category',
-        back_populates='products'
-    )
-
-    order_item=relationship(
-        'order_items',
-        back_populates='products'
-
+    sub_categories= relationship(
+        'SubCategory',
+        back_populates='product'
     )
 
     product_variants=relationship(
         'product_variant',
+        back_populates='product'
+    )
+
+    brand=relationship(
+        'brand',
         back_populates='product'
     )
