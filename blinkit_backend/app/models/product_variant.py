@@ -12,7 +12,7 @@ class product_variant(Base):
     price= Column(DECIMAL(10,2),nullable=False)
     stock_quantity= Column(Integer,nullable=False)
     isdeleted= Column(Boolean,default=False,nullable=False)
-    variant_name=Column(String,nullable=True,default='STANDARD')
+    variant_name=Column(String,nullable=False,default='STANDARD')
     delete_timestamp=Column(DateTime(timezone=True),nullable=True)
 
     #relationship
@@ -28,3 +28,4 @@ class product_variant(Base):
         'order_items',
         back_populates='product_variants'
     )
+    
