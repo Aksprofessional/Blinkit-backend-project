@@ -1,10 +1,8 @@
-from sqlalchemy import Column, Integer, ForeignKey,UUID
-from app.db.database import Base
+from sqlalchemy import Column, Integer, ForeignKey,UUID,DateTime,UniqueConstraint
 from sqlalchemy.orm import relationship
 import uuid
-from sqlalchemy import Column, ForeignKey, Integer, UUID, UniqueConstraint
-from sqlalchemy.orm import relationship
 from app.db.database import Base
+from sqlalchemy.sql import func
 
 
 class CartItem(Base):
@@ -14,6 +12,7 @@ class CartItem(Base):
     cart_id = Column(UUID(as_uuid=True),ForeignKey("cart.id",ondelete="CASCADE"),nullable=False)
     product_variant_id = Column(UUID(as_uuid=True),ForeignKey("product_variant.id"),nullable=False)
     quantity = Column(Integer,nullable=False,default=1)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     #relationship
 

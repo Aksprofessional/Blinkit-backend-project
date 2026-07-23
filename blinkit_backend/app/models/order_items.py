@@ -1,4 +1,4 @@
-from sqlalchemy import Column,Integer,ForeignKey,UUID,DECIMAL,UniqueConstraint
+from sqlalchemy import Column,Integer,ForeignKey,UUID,DECIMAL,UniqueConstraint,String
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 import uuid
@@ -12,12 +12,13 @@ class order_items(Base):
     id=Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     product_variant_id = Column(UUID(as_uuid=True),ForeignKey("product_variant.id"),nullable=False)
     order_id=Column(UUID(as_uuid=True),ForeignKey('orders.id'),nullable=False)
-    quantitiy=Column(Integer,nullable=False)
-    bought_price=Column(DECIMAL(10,2),nullable=False)
+    quantity=Column(Integer,nullable=False)
+    unit_price=Column(DECIMAL(10,2),nullable=False)
+    total_price=Column(DECIMAL(10,2),nullable=False)
 
     #relationship
     orders=relationship(
-        'order',
+        'Order',
         back_populates='order_item'
     )
     product_variants = relationship(
