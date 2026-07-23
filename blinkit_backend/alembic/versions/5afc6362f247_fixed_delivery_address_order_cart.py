@@ -42,14 +42,16 @@ def upgrade() -> None:
             nullable=True,
         ),
     )
-
+    op.execute(
+        "ALTER TYPE order_status ADD VALUE IF NOT EXISTS 'CONFIRMED';"
+    )   
     op.add_column(
         "delivery_address",
         sa.Column("reciever_name", sa.String(), nullable=False),
     )
     op.add_column(
         "delivery_address",
-        sa.Column("mobile_no", sa.Integer(), nullable=False),
+        sa.Column("mobile_no", sa.String(), nullable=False),
     )
     op.add_column(
         "delivery_address",
@@ -129,7 +131,7 @@ def upgrade() -> None:
     )
     op.add_column(
         "orders",
-        sa.Column("mobile_no", sa.Integer(), nullable=False),
+        sa.Column("mobile_no", sa.String(), nullable=False),
     )
     op.add_column(
         "orders",

@@ -18,7 +18,7 @@ class delivery_address(Base):
     user_id=Column(UUID(as_uuid=True),ForeignKey('users.id'),nullable=False)
     reciever_name=Column(String,nullable=False)
     address=Column(String,nullable=False)
-    mobile_no=Column(Integer,nullable=False)
+    mobile_no=Column(String,nullable=False)
     pincode=Column(Integer,nullable=False)
     city=Column(String,nullable=False)
     state=Column(String,nullable=False)

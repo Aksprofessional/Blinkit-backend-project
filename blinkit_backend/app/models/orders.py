@@ -28,7 +28,7 @@ class Order(Base):
     total_amount=Column(DECIMAL(10,2),nullable=False)
     address=Column(String,nullable=False)
     reciever_name=Column(String,nullable=False)
-    mobile_no=Column(Integer,nullable=False)
+    mobile_no=Column(String,nullable=False)
     pincode=Column(Integer,nullable=False)
     city=Column(String,nullable=False)
     state=Column(String,nullable=False)
