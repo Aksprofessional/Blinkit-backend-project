@@ -23,4 +23,5 @@ app = FastAPI(
 )
 
 app.include_router(auth_router)
+app.include_router(cart_item.router, prefix='/api/cart-items')
 app.include_router(delivery_addresses.router, prefix='/api/address')
