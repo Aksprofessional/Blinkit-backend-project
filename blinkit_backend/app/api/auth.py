@@ -74,6 +74,19 @@ def login(
             detail="Invalid email or password"
         )
 
+    # check account status
+    if db_user.isdeleted:
+        raise HTTPException(
+            status_code=403,
+            detail="This account has been deleted."
+        )
+
+    if not db_user.is_active:
+        raise HTTPException(
+            status_code=403,
+            detail="This account has been disabled by admin."
+        )
+
     # Verify password
     if not verify_password(
         user.password,

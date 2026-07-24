@@ -22,10 +22,15 @@ class User(Base):
     role= Column(Enum(User_role , name="user_role_enum"), nullable=False, default=User_role.CUSTOMER)
     isdeleted= Column(Boolean,default=False,nullable=False)
     delete_timestamp=Column(DateTime(timezone=True),nullable=True)
+    is_active = Column(
+        Boolean,
+        default=True,
+        nullable=False
+    )
 
     #ralationship
     orders = relationship(
-        'Order',
+        'order',
         back_populates='users',
     )
 
