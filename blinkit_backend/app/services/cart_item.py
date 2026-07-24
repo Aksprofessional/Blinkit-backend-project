@@ -11,7 +11,7 @@ from app.services.cart import cart_create_or_get,check_cart_exists
 from uuid import UUID
 from app.repositories.cart_item import get_cart_items,get_cart_item_by_cart_item_id,get_cart_item_by_product_variant_id
 from app.schemas.cart_item import CartItemAction,GetCartItemResponse
-
+from app.models.products import PrductStockType
 
 
 
@@ -109,22 +109,22 @@ def get_product_from_cart(db: Session, current_user_id: UUID):
 
         if row_data["product_deleted"]:
             row_data["is_available"] = False
-            row_data["unavailable_reason"] = "PRODUCT_DELETED"
+            row_data["unavailable_reason"] = PrductStockType.PRODCUT_DELETED.value
             unavailable_cart_item_ids.add(row_data["cart_item_id"])
 
         elif row_data["product_variant_deleted"]:
             row_data["is_available"] = False
-            row_data["unavailable_reason"] = "VARIANT_DELETED"
+            row_data["unavailable_reason"] = PrductStockType.PRODUCT_VARIANT_DELETED.value
             unavailable_cart_item_ids.add(row_data["cart_item_id"])
 
         elif row_data["product_variant_stock_quantity"] == 0:
             row_data["is_available"] = False
-            row_data["unavailable_reason"] = "OUT_OF_STOCK"
+            row_data["unavailable_reason"] = PrductStockType.OUT_OF_STOCK.value
             unavailable_cart_item_ids.add(row_data["cart_item_id"])
 
         elif row_data["cart_item_quantity"] > row_data["product_variant_stock_quantity"]:
             row_data["is_available"] = False
-            row_data["unavailable_reason"] = "INSUFFICIENT_STOCK"
+            row_data["unavailable_reason"] = PrductStockType.INSUFFICIENT_STOCK.value
 
 
 
@@ -143,6 +143,5 @@ def get_product_from_cart(db: Session, current_user_id: UUID):
 
 def delete_cart_item(db: Session, current_user_id: UUID,cart_item_id: UUID):
     cart_item=get_cart_item_by_cart_item_id(db,current_user_id,cart_item_id)
-    db.delete(cart_item)
     commit_or_500(db,'cart item could not be deleted')
     return cart_item

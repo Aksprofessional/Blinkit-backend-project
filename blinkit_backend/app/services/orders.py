@@ -17,7 +17,7 @@ from app.repositories.orders import order_create,get_order,get_all_order_paginat
 from app.repositories.product_variant import lock_product_variant_for_order
 from app.utils.cursor import decode_cursor,encode_cursor
 from fastapi.encoders import jsonable_encoder
-
+from app.models.products import PrductStockType
 
 
 def place_order(db: Session,current_user: User,unavailable_cart_item_ids: set[UUID]):
@@ -62,7 +62,7 @@ def place_order(db: Session,current_user: User,unavailable_cart_item_ids: set[UU
                     "cart_item_id": user_cart_item.cart_item_id,
                     "requested_quantity": user_cart_item.cart_item_quantity,
                     "available_quantity": 0,
-                    "reason": "DISCONTINUED ",
+                    "reason": PrductStockType.PRODUCT_VARIANT_DELETED.value,
                 }
                 products_not_available.append(product_variant_data)
 
@@ -81,7 +81,7 @@ def place_order(db: Session,current_user: User,unavailable_cart_item_ids: set[UU
                     "cart_item_id": user_cart_item.cart_item_id,
                     "requested_quantity":user_cart_item.cart_item_quantity,
                     "available_quantity": lock_product_variant_stock.stock_quantity,
-                    "reason": "INSUFFICIENT STOCK"
+                    "reason": PrductStockType.INSUFFICIENT_STOCK.value
                 }
 
                 
@@ -104,7 +104,7 @@ def place_order(db: Session,current_user: User,unavailable_cart_item_ids: set[UU
                     "cart_item_id": user_cart_item.cart_item_id,
                     "requested_quantity":user_cart_item.cart_item_quantity,
                     "available_quantity": lock_product_variant_stock.stock_quantity,
-                    "reason": "OUT OF STOCK",
+                    "reason": PrductStockType.OUT_OF_STOCK.value,
                 }
                 products_not_available.append(product_variant_data)
             
@@ -183,7 +183,7 @@ def reorder_by_user(db: Session, current_user: User, order_id: UUID):
                         "product_name":existing_cart_item.product_variants.product.name,
                         "product_variant_name":existing_cart_item.product_variants.variant_name,
                         "product_image":existing_cart_item.product_variants.product.image,
-                        "reason": "INSUFFICIENT_STOCK",
+                        "reason": PrductStockType.INSUFFICIENT_STOCK.value,
                         "requested_quantity": existing_cart_item.quantity + order_item.quantity,
                         "added_quantity": max(0,existing_cart_item.product_variants.stock_quantity - existing_cart_item.quantity) ,
                         "available_quantity": existing_cart_item.product_variants.stock_quantity,
@@ -204,7 +204,7 @@ def reorder_by_user(db: Session, current_user: User, order_id: UUID):
                     "product_name":order_item.product_variants.product.name,
                     "product_variant_name":order_item.product_variants.variant_name,
                     "product_image":order_item.product_variants.product.image,
-                    "reason": "Discontinued"
+                    "reason": PrductStockType.PRODUCT_VARIANT_DELETED.value
                 }
                 product_not_available.append(product_variant_data)
                 continue
@@ -215,7 +215,7 @@ def reorder_by_user(db: Session, current_user: User, order_id: UUID):
                         "product_name":order_item.product_variants.product.name,
                         "product_variant_name":order_item.product_variants.variant_name,
                         "product_image":order_item.product_variants.product.image,
-                        "reason": "INSUFFICIENT_STOCK",
+                        "reason": PrductStockType.INSUFFICIENT_STOCK.value,
                         "requested_quantity": order_item.quantity,
                         "added_quantity": order_item.product_variants.stock_quantity,
                         "available_quantity": order_item.product_variants.stock_quantity,
@@ -231,7 +231,7 @@ def reorder_by_user(db: Session, current_user: User, order_id: UUID):
                     "product_name":order_item.product_variants.product.name,
                     "product_variant_name":order_item.product_variants.variant_name,
                     "product_image": order_item.product_variants.product.image,
-                    "reason": "Out Of Stock"
+                    "reason": PrductStockType.OUT_OF_STOCK.value
                 }
                 product_not_available.append(product_variant_data)
     commit_or_500(db,'could not fetch the items from previous order')
@@ -273,13 +273,13 @@ def get_all_orders(limit: int, db: Session, current_user: User, cursor: str | No
 
 def cancel_order(db: Session, current_user_id :UUID, order_id: UUID):
     user_order=get_order_by_id(db,current_user_id,order_id)
-    if user_order.status == OrderStatus.CANCELLED:
+    if user_order.status == OrderStatus.CANCELED:
         raise HTTPException(
             status_code=409,
             detail="Order has already been cancelled."
         )
 
-    if user_order.status == OrderStatus.COMPLETED:
+    if user_order.status == OrderStatus.COMPLETE:
         raise HTTPException(
             status_code=409,
             detail="Completed orders cannot be cancelled."

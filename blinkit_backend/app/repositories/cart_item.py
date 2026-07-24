@@ -87,6 +87,7 @@ def get_cart_item_by_cart_item_id(db: Session, current_user_id: UUID, cart_item_
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Cart item not found."
         )
+    db.delete(cart_item)
     return cart_item
 
 
