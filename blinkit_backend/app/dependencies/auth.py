@@ -9,30 +9,28 @@ from app.core.config import Setting
 from app.db.database import get_db
 from app.models.user import User
 
-# It's just extracting the token
+#its just extracting token 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/auth/login"  # Swagger knows to call this endpoint to get a token
+    tokenUrl="/auth/login"    #swagger knows to get a token call this
 )
 
-
 def get_current_user(
-    token: str = Depends(oauth2_scheme),  # FastAPI extracts the token from the request
+    token: str = Depends(oauth2_scheme),       #dependency injection that ,,fastapi looks at incoming request extract token from it.
     db: Session = Depends(get_db),
 ):
-    credentials_exception = HTTPException(
+    credentials_exception = HTTPException(     
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
     )
 
-    # Decode the token
+    #decoding the token
     try:
         payload = jwt.decode(
             token,
             Setting.SECRET_KEY,
             algorithms=[Setting.ALGORITHM],
         )
-
-        # Extract user ID from the "sub" claim
+# extracting user id from parameter of token having sub.
         user_id = payload.get("sub")
 
         if user_id is None:
@@ -45,5 +43,6 @@ def get_current_user(
 
     if user is None or user.isdeleted:
         raise credentials_exception
+    
 
     return user

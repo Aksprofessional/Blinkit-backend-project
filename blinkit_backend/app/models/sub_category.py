@@ -16,7 +16,13 @@ class SubCategory(Base):
         'Category',
         back_populates='sub_categories'
     )
+
     product=relationship(
         'Products',
         back_populates='sub_categories'
+    )
+
+    collection_subcategories = relationship(
+        "CollectionSubCategory",
+        back_populates="subcategory"
     )
