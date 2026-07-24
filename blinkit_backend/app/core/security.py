@@ -55,3 +55,24 @@ def create_refresh_token(user_id: str) -> str:
         Setting.SECRET_KEY,
         algorithm=Setting.ALGORITHM,
     )
+
+
+
+def create_email_verification_token(
+    email: str,
+):
+    expire = datetime.now(
+        timezone.utc
+    ) + timedelta(hours=24)
+
+    payload = {
+        "sub": email,
+        "type": "verify",
+        "exp": expire,
+    }
+
+    return jwt.encode(
+        payload,
+        Setting.SECRET_KEY,
+        algorithm=Setting.ALGORITHM,
+    )

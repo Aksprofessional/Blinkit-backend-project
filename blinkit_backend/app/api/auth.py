@@ -14,7 +14,10 @@ from app.core.config import Setting
 from app.schemas.user import RefreshTokenRequest
 
 from app.schemas.user import UserLogin, Token
-from app.core.security import verify_password, create_access_token, create_refresh_token
+from app.core.security import verify_password, create_access_token, create_refresh_token,create_email_verification_token
+from jose import JWTError, jwt
+
+from app.utils.email import send_verification_email
 
 router = APIRouter(
     prefix="/auth",
@@ -24,14 +27,13 @@ router = APIRouter(
 
 @router.post(
     "/register",
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
-def register(
+async def register(
     user: UserRegister,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    # Checking if email already exists,, aslo the first match
+    # Check if email already exists
     existing_user = db.query(User).filter(
         User.mail == user.mail
     ).first()
@@ -39,27 +41,39 @@ def register(
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+            detail="Email already registered",
         )
 
-    hashed_password = hash_password(user.password)
+    hashed_password = hash_password(
+        user.password
+    )
 
-    # Create user object just a python object
     new_user = User(
         name=user.name,
         mail=user.mail,
         hashed_password=hashed_password,
-        role=User_role.CUSTOMER
+        role=User_role.CUSTOMER,
     )
 
-    # adding to database
     db.add(new_user)
-    # now in db
     db.commit()
-    #now id is created by postgreql so refresh updates that in our python object
     db.refresh(new_user)
 
-    return new_user
+    token = create_email_verification_token(
+        new_user.mail,
+    )
+
+    await send_verification_email(
+        new_user.mail,
+        token,
+    )
+
+    return {
+        "message": "Registration successful. Please verify your email before logging in.",
+    }
+
+
+
 
 @router.post(
     "/login",
@@ -86,6 +100,12 @@ def login(
         raise HTTPException(
             status_code=403,
             detail="This account has been deleted."
+        )
+
+    if not db_user.is_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Please verify your email before logging in."
         )
 
     if not db_user.is_active:
@@ -174,4 +194,54 @@ def refresh_access_token(
     return {
         "access_token": access_token,
         "token_type": "bearer",
+    }
+
+
+
+
+
+
+
+@router.get("/verify-email")
+def verify_email(
+    token: str,
+    db: Session = Depends(get_db),
+):
+    try:
+        payload = jwt.decode(
+            token,
+            Setting.SECRET_KEY,
+            algorithms=[Setting.ALGORITHM],
+        )
+
+        if payload.get("type") != "verify":
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid token",
+            )
+
+        email = payload.get("sub")
+
+    except JWTError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or expired token.",
+        )
+
+    user = db.query(User).filter(
+        User.mail == email
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found.",
+        )
+
+    user.is_verified = True
+
+    db.commit()
+
+    return {
+        "message": "Email verified successfully."
     }

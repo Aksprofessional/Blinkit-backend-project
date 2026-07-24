@@ -27,6 +27,11 @@ class User(Base):
         default=True,
         nullable=False
     )
+    is_verified = Column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
 
     #ralationship
     orders = relationship(
