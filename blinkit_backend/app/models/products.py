@@ -2,6 +2,14 @@ from sqlalchemy import Column,UUID,String,ForeignKey,Boolean,DateTime
 from app.db.database import Base
 from sqlalchemy.orm import relationship
 import uuid
+from enum import Enum
+
+class PrductStockType(str,Enum):
+    PRODCUT_DELETED="produt_deleted"
+    PRODUCT_VARIANT_DELETED = "product_variant_deleted"
+    OUT_OF_STOCK = "out_of_stock"
+    INSUFFICIENT_STOCK = "insufficient_stock"
+
 
 class Products(Base):
     __tablename__="products"
@@ -15,7 +23,7 @@ class Products(Base):
     delete_timestamp=Column(DateTime(timezone=True),nullable=True)
 
 
-    
+
 
     #relationship
     sub_categories= relationship(

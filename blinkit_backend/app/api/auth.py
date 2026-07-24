@@ -6,8 +6,15 @@ from app.models.user import User, User_role
 from app.schemas.user import UserRegister, UserResponse
 from app.core.security import hash_password
 
+
+from uuid import UUID
+from jose import JWTError, jwt
+
+from app.core.config import Setting
+from app.schemas.user import RefreshTokenRequest
+
 from app.schemas.user import UserLogin, Token
-from app.core.security import verify_password, create_access_token
+from app.core.security import verify_password, create_access_token, create_refresh_token
 
 router = APIRouter(
     prefix="/auth",
@@ -102,7 +109,69 @@ def login(
         str(db_user.id)
     )
 
+    refresh_token = create_refresh_token(
+        str(db_user.id)
+    )
+
     return {
         "access_token": access_token,
-        "token_type": "bearer"
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
+
+
+
+
+
+
+
+
+
+@router.post("/refresh")
+def refresh_access_token(
+    token_data: RefreshTokenRequest,
+    db: Session = Depends(get_db),
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid refresh token",
+    )
+
+    try:
+        payload = jwt.decode(
+            token_data.refresh_token,
+            Setting.SECRET_KEY,
+            algorithms=[Setting.ALGORITHM],
+        )
+
+        if payload.get("type") != "refresh":
+            raise credentials_exception
+
+        user_id = payload.get("sub")
+
+        if user_id is None:
+            raise credentials_exception
+
+    except JWTError:
+        raise credentials_exception
+
+    user = db.get(
+        User,
+        UUID(user_id),
+    )
+
+    if (
+        user is None
+        or user.isdeleted
+        or not user.is_active
+    ):
+        raise credentials_exception
+
+    access_token = create_access_token(
+        str(user.id),
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
     }
