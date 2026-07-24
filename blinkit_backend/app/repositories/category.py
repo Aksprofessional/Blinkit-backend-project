@@ -90,3 +90,48 @@ def delete_category(
     db.commit()
     db.refresh(category)
     return category
+
+
+
+
+from sqlalchemy.orm import Session
+from sqlalchemy.orm import selectinload
+
+from app.models.category import Category
+from app.models.collection import Collection
+from app.models.collection_subcategory import CollectionSubCategory
+from app.models.sub_category import SubCategory
+
+
+def get_all_categories_user(db: Session):
+
+    return (
+        db.query(Category)
+        .options(
+            selectinload(Category.sub_categories)
+        )
+        .filter(
+            Category.is_active.is_(True)
+        )
+        .all()
+    )
+
+
+def get_collection_user(
+    db: Session,
+    collection_id,
+):
+
+    return (
+        db.query(Collection)
+        .options(
+            selectinload(Collection.collection_subcategories)
+            .selectinload(CollectionSubCategory.subcategory)
+            .selectinload(SubCategory.categories)
+        )
+        .filter(
+            Collection.id == collection_id,
+            Collection.is_active.is_(True),
+        )
+        .first()
+    )

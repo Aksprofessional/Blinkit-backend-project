@@ -5,7 +5,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from typing import Optional 
-
+from sqlalchemy.orm import joinedload
+from app.models.product_variant import product_variant
 from app.models.products import Products
 from app.schemas.products import ProductCreate, ProductUpdate
 
@@ -141,3 +142,34 @@ def delete_product(
     return {
         "message": "Product deleted successfully"
     }
+
+
+def suggestion_search_product_customer(db: Session, search_param: str):
+    return db.query(Products).options(joinedload(Products.product_variants)).filter(Products.name.ilike(search_param),Products.isdeleted == False, product_variant.isdeleted==False).all()
+
+
+
+
+
+from sqlalchemy.orm import Session, selectinload
+
+from app.models.products import Products
+from app.models.product_variant import product_variant
+
+
+def get_products_by_subcategory(
+    db: Session,
+    subcategory_id,
+):
+
+    return (
+        db.query(Products)
+        .options(
+            selectinload(Products.product_variants)
+        )
+        .filter(
+            Products.sub_category_id == subcategory_id,
+            Products.isdeleted.is_(False),
+        )
+        .all()
+    )

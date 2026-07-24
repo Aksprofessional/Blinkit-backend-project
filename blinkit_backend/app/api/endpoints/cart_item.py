@@ -7,7 +7,6 @@ from uuid import UUID
 from app.repositories.product_variant import get_product_variant
 from app.repositories import cart_item
 from app.schemas.cart_item import AddItemResponse,UpdateCartItem,UpdateItemResponse,GetItemCartResponeFinal
-from app.dependencies.permissions import check_user_is_deleted
 from app.services.cart_item import add_product,update_cart_item,get_product_from_cart,delete_cart_item
 from app.dependencies.auth import get_current_user
 
