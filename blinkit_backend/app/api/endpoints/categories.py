@@ -12,12 +12,11 @@ from app.services.category import (
 )
 
 router = APIRouter(
-    tags=["Customer Discovery"],
 )
 
 
 @router.get(
-    "/categories",
+    "/",
     response_model=CategoryListResponse,
 )
 def get_categories(

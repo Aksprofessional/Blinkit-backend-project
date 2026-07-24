@@ -17,6 +17,7 @@ router=APIRouter()
 
 @router.get('',dependencies=[Depends(get_current_user)],response_model = CollectionResponse)
 def get_all_collection_api(db: Session = Depends(get_db)):
+    print('ENDPOINT REACHED')
     return get_all_collection(db)
     
 

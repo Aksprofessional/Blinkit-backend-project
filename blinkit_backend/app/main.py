@@ -36,12 +36,12 @@ app = FastAPI(
 )
 
 app.include_router(auth_router)
-app.include_router(cart_item.router, prefix='/api/cart-items')
-app.include_router(delivery_addresses.router, prefix='/api/address')
-app.include_router(orders.router, prefix='/api/order')
-app.include_router(products.router, prefix='/api/products')
-app.include_router(collections.router, prefix='/api/collections')
-app.include_router(categories.router, prefix='/api/categories')
+app.include_router(cart_item.router, prefix='/api/cart-items',tags=["Customer cart item"])
+app.include_router(delivery_addresses.router, prefix='/api/address',tags=["Customer deliver address"])
+app.include_router(orders.router, prefix='/api/order',tags=["Customer orders"])
+app.include_router(products.router, prefix='/api/products',tags=["Customer Products"])
+app.include_router(collections.router, prefix='/api/collections', tags=["Customer collection"])
+app.include_router(categories.router, prefix='/api/categories',tags=["Customer categories"])
 
 
 app.include_router(

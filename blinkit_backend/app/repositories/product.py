@@ -40,10 +40,14 @@ def get_product_by_id(
     product_id: UUID
 ):
 
-    product = db.get(
-        Products,
-        product_id
+    product = (
+    db.query(Products)
+    .filter(
+        Products.id == product_id,
+        Products.isdeleted.is_(False),
     )
+    .first()
+)
 
     if product is None:
         raise HTTPException(

@@ -41,7 +41,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-class ProductVariantResponse(BaseModel):
+class ProductVariantResponseFor(BaseModel):
     id: UUID
     variant_name: str
     price: Decimal
@@ -52,7 +52,7 @@ class ProductResponse(BaseModel):
     name: str
     image: str
     description: str | None
-    variants: list[ProductVariantResponse]
+    variants: list[ProductVariantResponseFor]
 
 
 class ProductListResponse(BaseModel):

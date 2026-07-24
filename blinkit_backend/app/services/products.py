@@ -31,7 +31,7 @@ from app.repositories.product import (
 from app.schemas.products import (
     ProductListResponse,
     ProductResponse,
-    ProductVariantResponse,
+    ProductVariantResponseFor,
 )
 
 
@@ -53,7 +53,7 @@ def get_products_service(
                 image=product.image,
                 description=product.description,
                 variants=[
-                    ProductVariantResponse(
+                    ProductVariantResponseFor(
                         id=variant.id,
                         variant_name=variant.variant_name,
                         price=variant.price,
