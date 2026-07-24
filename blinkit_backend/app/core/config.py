@@ -10,6 +10,7 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
         os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30)
     )
+    SECRET_KEY_CURSOR: str =os.getenv("SECRET_KEY_CURSOR")
 
 
 

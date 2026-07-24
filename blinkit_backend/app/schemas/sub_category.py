@@ -5,8 +5,9 @@ from uuid import UUID
 
 class SubCategoryCreate(BaseModel):
     name: str
-    category_id: UUID
     is_active: bool = True
+    category_id: UUID
+
 
 
 class SubCategoryUpdate(BaseModel):

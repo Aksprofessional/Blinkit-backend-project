@@ -17,7 +17,7 @@ from app.models.products import Products
 from app.models.product_variant import product_variant
 from app.models.delivery_address import delivery_address
 from app.models.order_items import order_items
-from app.models.orders import order
+from app.models.orders import Order
 from app.models.sub_category import SubCategory
 from app.models.brand import brand
 from app.models.collection import Collection

@@ -6,7 +6,7 @@ from app.models.product_variant import product_variant
 from app.models.category import Category
 from app.models.sub_category import SubCategory
 from app.schemas.category import CategoryCreate
-from app.schemas.subcategory import SubCategoryCreate
+from app.schemas.sub_category import SubCategoryCreate
 from app.schemas.products import AddProduct
 from app.db.database import get_db
 from app.dependencies.permissions import require_admin
