@@ -33,6 +33,9 @@ def get_current_user(
 # extracting user id from parameter of token having sub.
         user_id = payload.get("sub")
 
+        if payload.get("type") != "access":
+            raise credentials_exception
+
         if user_id is None:
             raise credentials_exception
 

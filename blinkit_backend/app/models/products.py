@@ -23,7 +23,7 @@ class Products(Base):
     delete_timestamp=Column(DateTime(timezone=True),nullable=True)
 
 
-    
+
 
     #relationship
     sub_categories= relationship(
