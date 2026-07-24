@@ -1,12 +1,11 @@
 from fastapi import HTTPException
-
+from uuid import UUID
 from app.repositories.collection import (
     get_all_categories,
     get_collection,
 )
-
 from app.schemas.category import (
-    DiscoveryCategoryResponse,
+    CategoryListResponse,
     CategoryResponse,
     SubCategoryResponse,
 )
@@ -14,7 +13,7 @@ from app.schemas.category import (
 
 def get_categories_service(
     db,
-    collection: str | None,
+    collection: UUID | None,
 ):
 
     # Return all categories
@@ -22,7 +21,7 @@ def get_categories_service(
 
         categories = get_all_categories(db)
 
-        return DiscoveryCategoryResponse(
+        return CategoryListResponse(
             categories=[
                 CategoryResponse(
                     id=category.id,
@@ -43,7 +42,7 @@ def get_categories_service(
     # Return categories for a collection
     collection_obj = get_collection(
         db=db,
-        collection=collection,
+        collection_id=collection,
     )
 
     if collection_obj is None:
@@ -70,7 +69,6 @@ def get_categories_service(
             continue
 
         if category.id not in category_map:
-
             category_map[category.id] = CategoryResponse(
                 id=category.id,
                 name=category.name,
@@ -84,6 +82,6 @@ def get_categories_service(
             )
         )
 
-    return DiscoveryCategoryResponse(
+    return CategoryListResponse(
         categories=list(category_map.values())
     )

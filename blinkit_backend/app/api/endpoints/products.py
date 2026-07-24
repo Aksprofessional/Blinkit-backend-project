@@ -17,7 +17,7 @@ from app.services.products import get_product_by_id_service
 router = APIRouter(
     tags=["Customer Products"],
 )
-@router.get('',dependencies=[get_current_user])
+@router.get('',dependencies=[Depends(get_current_user)])
 def suggestion_search_product_api(db: Session = Depends(get_db), search_param: str = Query(...,ge=3)):
     searched_products=suggestion_search_product_details(db,search_param)
 

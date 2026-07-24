@@ -7,15 +7,15 @@ from uuid import UUID
 from app.services.collections import get_all_collection
 from app.schemas.collection import CollectionResponse
 from app.schemas.category import (
-    DiscoveryCategoryResponse,
+    CategoryListResponse
 )
 
-from app.services.collections import get
+
 
 
 router=APIRouter()
 
-@router.get('',dependencies=[get_current_user],response_model = CollectionResponse)
+@router.get('',dependencies=[Depends(get_current_user)],response_model = CollectionResponse)
 def get_all_collection_api(db: Session = Depends(get_db)):
     return get_all_collection(db)
     
