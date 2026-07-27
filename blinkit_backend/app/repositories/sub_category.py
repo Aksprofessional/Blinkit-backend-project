@@ -1,15 +1,10 @@
 from uuid import UUID
-
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-
 from typing import Optional
-
 from app.models.sub_category import SubCategory
-from app.schemas.sub_category import (
-    SubCategoryCreate,
-    SubCategoryUpdate
-)
+from app.schemas.sub_category import SubCategoryCreate,SubCategoryUpdate
+
 
 
 def create_subcategory(

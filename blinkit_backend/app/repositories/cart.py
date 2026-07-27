@@ -1,8 +1,8 @@
 from fastapi import HTTPException,status
-from sqlalchemy.orm import Session,joinedload
+from sqlalchemy.orm import Session
 from uuid import UUID
 from app.models.cart import Cart
-from app.models.cart_item import CartItem
+
 
 def get_cart_by_user_id(db: Session,user_id: UUID):
     cart=db.query(Cart).filter(Cart.user_id==user_id).first()

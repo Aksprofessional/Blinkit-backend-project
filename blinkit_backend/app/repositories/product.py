@@ -1,15 +1,11 @@
 from uuid import UUID
 from datetime import datetime, timezone
-
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
-
+from sqlalchemy.orm import Session,joinedload
 from typing import Optional 
-from sqlalchemy.orm import joinedload
 from app.models.product_variant import product_variant
 from app.models.products import Products
 from app.schemas.products import ProductCreate, ProductUpdate
-
 
 def create_product(db: Session, product_data: ProductCreate):
 
@@ -149,16 +145,14 @@ def delete_product(
 
 
 def suggestion_search_product_customer(db: Session, search_param: str):
-    return db.query(Products).options(joinedload(Products.product_variants)).filter(Products.name.ilike(search_param),Products.isdeleted == False, product_variant.isdeleted==False).all()
+    products= db.query(Products).options(joinedload(Products.product_variants)).filter(Products.name.ilike(f"%{search_param}%"),Products.isdeleted == False, product_variant.isdeleted==False).all()
+    return products
 
 
 
 
 
-from sqlalchemy.orm import Session, selectinload
 
-from app.models.products import Products
-from app.models.product_variant import product_variant
 
 
 def get_products_by_subcategory(
@@ -169,7 +163,7 @@ def get_products_by_subcategory(
     return (
         db.query(Products)
         .options(
-            selectinload(Products.product_variants)
+            joinedload(Products.product_variants)
         )
         .filter(
             Products.sub_category_id == subcategory_id,

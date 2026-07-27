@@ -1,6 +1,4 @@
 from sqlalchemy.orm import Session
-from app.models.delivery_address import delivery_address,AddressType
-from fastapi import HTTPException, status
 from uuid import UUID
 from app.models.order_items import order_items
 from decimal import Decimal

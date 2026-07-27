@@ -1,49 +1,32 @@
-from sqlalchemy.orm import Session
-from app.models.user import User
 from app.repositories.collection import get_all_collection_customer
-
-
-
-def get_all_collection(db: Session):
-    collection=get_all_collection_customer(db)
-    return collection
-
-
+from app.schemas.collection import CollectionResponse
 from sqlalchemy.orm import Session, selectinload
-
 from app.models.category import Category
 from app.models.collection import Collection
 from app.models.collection_subcategory import CollectionSubCategory
 from app.models.sub_category import SubCategory
 
 
-def get_all_categories(db: Session):
-    return (
-        db.query(Category)
-        .options(
-            selectinload(Category.sub_categories)
+
+# Retrieve all active collections
+def get_all_collection(db: Session):
+
+    # Fetch collections from the repository
+    collections=get_all_collection_customer(db)
+
+    # Store the converted response objects
+    collections_list=[]
+
+    # Convert each collection into the response schema
+    for collection in collections:
+        collection_pydantic=CollectionResponse(
+            id=collection.id,
+            name=collection.name,
+            display_order=collection.display_order
         )
-        .filter(
-            Category.is_active.is_(True)
-        )
-        .all()
-    )
+        collections_list.append(collection_pydantic)
+
+    return collections_list
 
 
-def get_collection(
-    db: Session,
-    collection: str,
-):
-    return (
-        db.query(Collection)
-        .options(
-            selectinload(Collection.collection_subcategories)
-            .selectinload(CollectionSubCategory.subcategory)
-            .selectinload(SubCategory.categories)
-        )
-        .filter(
-            Collection.name == collection,
-            Collection.is_active.is_(True),
-        )
-        .first()
-    )
+

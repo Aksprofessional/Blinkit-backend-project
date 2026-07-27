@@ -27,13 +27,10 @@ from app.api.endpoints.admin.product_variant import router as product_variant_ro
 from app.api.endpoints.admin.collection import router as collection_router
 from app.api.endpoints.admin.collection_subcategory import router as collection_subcategory_router
 from app.api.endpoints.admin.user import router as admin_user_router
-
 from app.api.endpoints.user1 import router as user_router
 
 
-app = FastAPI(
-    title="Blinkit Backend API"
-)
+app = FastAPI(title="Blinkit Backend API")
 
 app.include_router(auth_router)
 app.include_router(cart_item.router, prefix='/api/cart-items',tags=["Customer cart item"])

@@ -34,13 +34,6 @@ class SuggestionProducts(BaseModel):
 class ListSuggestionProducts(BaseModel):
     products: list[SuggestionProducts]
 
-
-
-from decimal import Decimal
-from uuid import UUID
-from pydantic import BaseModel
-
-
 class ProductVariantResponseFor(BaseModel):
     id: UUID
     variant_name: str

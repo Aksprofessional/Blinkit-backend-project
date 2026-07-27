@@ -4,10 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.collection_subcategory import CollectionSubCategory
-from app.schemas.collection_subcategory import (
-    CollectionSubCategoryCreate,
-    CollectionSubCategoryUpdate,
-)
+from app.schemas.collection_subcategory import CollectionSubCategoryCreate,CollectionSubCategoryUpdate
 
 
 def get_collection_subcategory_by_id(
