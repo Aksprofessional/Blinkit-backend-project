@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session,joinedload
 from sqlalchemy import or_,and_
-from app.models.delivery_address import delivery_address,AddressType
+from app.models.delivery_address import delivery_address
 from fastapi import HTTPException, status
 from uuid import UUID
 from app.models.orders import FilterOrderStatus,OrderStatus

@@ -4,6 +4,7 @@ from app.core.config import Setting
 
 
 
+# Create the SQLAlchemy engine with connection pool configuration
 engine = create_engine(
     Setting.DATABASE_URL,
     pool_size=20,  # Phase 1.5: 20 persistent connections (supports 100+ users)
@@ -18,13 +19,22 @@ engine = create_engine(
     }
 )
 
+# Create a session factory for database interactions
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Base class for all SQLAlchemy ORM models
 Base = declarative_base()
 
+# Dependency that provides a database session for each request
 def get_db():
+
+    # Create a new database session
     db = SessionLocal()
     try:
+
+        # Yield the session to the requesting endpoint
         yield db
     finally:
+
+        # Ensure the session is closed after the request completes
         db.close()

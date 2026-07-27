@@ -20,14 +20,10 @@ class CollectionResponse(BaseModel):
     display_order: int
 
 
-from uuid import UUID
-
-from pydantic import BaseModel
-
-
 class CollectionResponse(BaseModel):
     id: UUID
     name: str
+    display_order: int
 
 
 class CollectionListResponse(BaseModel):

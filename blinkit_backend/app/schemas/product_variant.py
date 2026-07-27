@@ -20,12 +20,6 @@ class ProductVariantUpdate(BaseModel):
     stock_quantity: Optional[int] = Field(default=None, ge=0)
 
 
-
-from decimal import Decimal
-from uuid import UUID
-from pydantic import BaseModel
-
-
 class ProductVariantResponse(BaseModel):
     id: UUID
     variant_name: str

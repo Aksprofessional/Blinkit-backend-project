@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from app.models.delivery_address import delivery_address,AddressType
+from app.models.delivery_address import delivery_address
 from fastapi import HTTPException, status
 from uuid import UUID
-from app.schemas.delivery_address import AddAddress,UpdateAddressModel
+from app.schemas.delivery_address import AddAddress
 
 def delivery_address_exists(db: Session, address: AddAddress,current_user_id: UUID):
     addresses=db.query(delivery_address).filter(delivery_address.address==address.address,

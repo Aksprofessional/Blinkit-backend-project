@@ -3,7 +3,6 @@ from app.models.user import User
 from app.schemas.orders import OrderResponseAll
 from app.schemas.cursor import CursorResponse
 from app.models.orders import OrderStatus,FilterOrderStatus
-from datetime import datetime
 from app.services.cart import check_cart_exists
 from fastapi import HTTPException,status
 from app.utils.db import commit_or_500
@@ -20,38 +19,55 @@ from fastapi.encoders import jsonable_encoder
 from app.models.products import PrductStockType
 
 
+# Place a new order for the authenticated user
 def place_order(db: Session,current_user: User,unavailable_cart_item_ids: set[UUID]):
 
+    # Retrieve the user's cart
     user_cart=check_cart_exists(db,current_user.id)
+
+    # Retrieve the user's default delivery address
     user_delivery_address=get_current_default_address_user(db,current_user.id)
 
+    # Fetch all cart items eligible for ordering
     user_cart_items=get_cart_items_for_order(db,user_cart.id)
+
+    # Ensure the cart contains products
     if user_cart_items == []:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='the cart has no products'
         )
     
+    # Store cart item ids and product variant ids
     cart_item_ids_check = set()
     product_variant_ids = []
 
     for item in user_cart_items:
         cart_item_ids_check.add(item.cart_item_id)
         product_variant_ids.append(item.product_variant_id)
+
+    # Validate unavailable cart item ids received from the client
     if not unavailable_cart_item_ids.issubset(cart_item_ids_check):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid unavailable cart item ids."
         )
+
+    # Lock product variants for stock validation
     product_variants=lock_product_variant_for_order(db,product_variant_ids)
+
+    # Map product variants by id for quick lookup
     variant_map={variant.id:variant for variant in product_variants}
+
     products_not_available=[]
     product_quantity_insufficient=[]
     products_out_of_stock_id= set()
     total_amount=Decimal("0.00")
 
+    # Validate each cart item before creating the order
     for user_cart_item in user_cart_items:
 
+        # Handle deleted products or product variants
         if user_cart_item.product_variant_deleted or user_cart_item.product_deleted:
             if user_cart_item.cart_item_id not in unavailable_cart_item_ids:
                 product_variant_data = {
@@ -69,9 +85,13 @@ def place_order(db: Session,current_user: User,unavailable_cart_item_ids: set[UU
             products_out_of_stock_id.add(user_cart_item.cart_item_id)
             continue
 
+        # Retrieve the locked product variant
         lock_product_variant_stock=variant_map[user_cart_item.product_variant_id]
+
+        # Check whether the product is in stock
         if lock_product_variant_stock.stock_quantity>0:
             
+            # Handle insufficient stock
             if lock_product_variant_stock.stock_quantity < user_cart_item.cart_item_quantity:
                 product_variant_data={
                     "product_variant_id":user_cart_item.product_variant_id,
@@ -84,15 +104,13 @@ def place_order(db: Session,current_user: User,unavailable_cart_item_ids: set[UU
                     "reason": PrductStockType.INSUFFICIENT_STOCK.value
                 }
 
-                
                 product_quantity_insufficient.append(product_variant_data)
+
+            # Add the item total to the order amount
             else:
                 total_amount += user_cart_item.cart_item_quantity * user_cart_item.product_variant_price
 
-                    
-
-
-            
+        # Handle out-of-stock products
         else:
             if user_cart_item.cart_item_id not in unavailable_cart_item_ids:
                 
@@ -107,17 +125,10 @@ def place_order(db: Session,current_user: User,unavailable_cart_item_ids: set[UU
                     "reason": PrductStockType.OUT_OF_STOCK.value,
                 }
                 products_not_available.append(product_variant_data)
-            
-            
-            
+
             products_out_of_stock_id.add(user_cart_item.cart_item_id)
 
-
-        
-    
-        
-
-
+    # Reject the order if stock has changed
     if product_quantity_insufficient or (products_out_of_stock_id != unavailable_cart_item_ids):
         # if products_out_of_stock_id:
         #     delete_cart_items(db,products_out_of_stock_id)
@@ -132,51 +143,87 @@ def place_order(db: Session,current_user: User,unavailable_cart_item_ids: set[UU
                     })
         )
 
-            
+    # Ensure at least one purchasable item remains
     if total_amount == Decimal("0.00"):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="No purchasable items remain in the cart."
         )
 
-
+    # Create the order
     user_order=order_create(db,user_delivery_address,current_user.id,total_amount)
 
+    # Create order items and reduce stock
     for user_cart_item in user_cart_items:
 
+        # Skip unavailable items
         if user_cart_item.cart_item_id in unavailable_cart_item_ids:
             continue
+
         user_product_variant=variant_map[user_cart_item.product_variant_id]
+
+        # Deduct stock
         user_product_variant.stock_quantity -= user_cart_item.cart_item_quantity
+
+        # Calculate total price for the order item
         total_price=user_cart_item.cart_item_quantity * user_cart_item.product_variant_price
+
+        # Create the order item
         creat_order_item(db,user_order.id,user_cart_item.cart_item_quantity,user_cart_item.product_variant_id,user_cart_item.product_variant_price,total_price)
 
-
+    # Remove purchased items from the cart
     delete_cart_items_list(db,cart_item_ids_check)
+
+    # Commit the transaction
     commit_or_500(db,'could not place the order')
+
     return user_order
 
 
 
+# Retrieve a specific order
 def get_order_by_id(db: Session, current_user_id :UUID, order_id: UUID):
+
+    # Fetch the requested order
     user_order=get_order(db,current_user_id,order_id)
+
     return user_order
 
 
+# Reorder items from a previous order
 def reorder_by_user(db: Session, current_user: User, order_id: UUID):
+
+    # Retrieve or create the user's cart
     user_cart,created=cart_create_or_get(db,current_user.id)
+
+    # Retrieve the previous order
     user_order=get_order(db,current_user.id,order_id)
+
+    # Load existing cart items if the cart already existed
     if not created:
         user_cart_items=get_cart_items_reorder(db,user_cart.id)
+
     product_not_available=[]
+
+    # Create a mapping of product variants already in the cart
     user_cart_items_mapping={item.product_variant_id:item for item in user_cart_items}
+
+    # Process each order item
     for order_item in user_order.order_item:
+
         existing_cart_item=user_cart_items_mapping.get(order_item.product_variant_id,None)
+
+        # Product already exists in the cart
         if existing_cart_item:
+
+            # Skip deleted products
             if existing_cart_item.product_variants.isdeleted or existing_cart_item.product_variants.product.isdeleted:
-                
                 continue
+
+            # Check stock availability
             if existing_cart_item.product_variants.stock_quantity > 0:
+
+                # Handle insufficient stock
                 if (existing_cart_item.quantity + order_item.quantity) > existing_cart_item.product_variants.stock_quantity:
                     product_variant_data={
                         "product_variant_id": existing_cart_item.product_variant_id,
@@ -192,12 +239,19 @@ def reorder_by_user(db: Session, current_user: User, order_id: UUID):
                     }
                     product_not_available.append(product_variant_data)
                     existing_cart_item.quantity = existing_cart_item.product_variants.stock_quantity
+
+                # Increase the quantity in the cart
                 else:
                     existing_cart_item.quantity += order_item.quantity
+
+            # Skip out-of-stock products
             else:
-            
                 continue
+
+        # Product does not exist in the cart
         else:
+
+            # Handle deleted products
             if order_item.product_variants.isdeleted or order_item.product_variants.product.isdeleted:
                 product_variant_data={
                     "product_variant_id":order_item.product_variant_id,
@@ -208,7 +262,11 @@ def reorder_by_user(db: Session, current_user: User, order_id: UUID):
                 }
                 product_not_available.append(product_variant_data)
                 continue
+
+            # Add products that are still in stock
             if order_item.product_variants.stock_quantity >0:
+
+                # Handle insufficient stock
                 if  order_item.quantity > order_item.product_variants.stock_quantity:
                     product_variant_data={
                         "product_variant_id": order_item.product_variant_id,
@@ -223,8 +281,12 @@ def reorder_by_user(db: Session, current_user: User, order_id: UUID):
                     }
                     product_not_available.append(product_variant_data)
                     add_product_cart_item(db,order_item.product_variant_id,user_cart.id,order_item.product_variants.stock_quantity)
+
+                # Add the requested quantity
                 else:
                     add_product_cart_item(db,order_item.product_variant_id,user_cart.id,order_item.quantity)
+
+            # Handle out-of-stock products
             else:
                 product_variant_data={
                     "product_variant_id":order_item.product_variant_id,
@@ -234,20 +296,31 @@ def reorder_by_user(db: Session, current_user: User, order_id: UUID):
                     "reason": PrductStockType.OUT_OF_STOCK.value
                 }
                 product_not_available.append(product_variant_data)
+
+    # Commit all cart updates
     commit_or_500(db,'could not fetch the items from previous order')
+
     return product_not_available
     
 
             
+# Retrieve paginated orders for the authenticated user
 def get_all_orders(limit: int, db: Session, current_user: User, cursor: str | None, order_status: FilterOrderStatus | None ):
+
     cursor_created_at=None
     cursor_id=None
+
+    # Decode the pagination cursor if provided
     if cursor is not None:
         cursor_created_at,cursor_id=decode_cursor(cursor)
     
+    # Fetch paginated orders
     user_orders=get_all_order_pagination(limit,db,current_user.id,cursor_created_at,cursor_id,order_status)
+
     has_next = len(user_orders) > limit
     next_cursor=None
+
+    # Generate the next cursor if more results exist
     if has_next:
         user_orders = user_orders[ :limit]
         last_order=user_orders[-1]
@@ -257,6 +330,8 @@ def get_all_orders(limit: int, db: Session, current_user: User, cursor: str | No
         )
         
     user_orders_list=[]
+
+    # Convert orders into the response schema
     for user_order in user_orders:
         order_response=OrderResponseAll(
             id=user_order.id,
@@ -271,31 +346,37 @@ def get_all_orders(limit: int, db: Session, current_user: User, cursor: str | No
 
 
 
+# Cancel an existing order
 def cancel_order(db: Session, current_user_id :UUID, order_id: UUID):
+
+    # Retrieve the requested order
     user_order=get_order_by_id(db,current_user_id,order_id)
+
+    # Prevent cancelling an already cancelled order
     if user_order.status == OrderStatus.CANCELED:
         raise HTTPException(
             status_code=409,
             detail="Order has already been cancelled."
         )
 
+    # Prevent cancelling completed orders
     if user_order.status == OrderStatus.COMPLETE:
         raise HTTPException(
             status_code=409,
             detail="Completed orders cannot be cancelled."
         )
 
+    # Prevent cancelling confirmed orders
     if user_order.status == OrderStatus.CONFIRMED:
         raise HTTPException(
             status_code=409,
             detail="Confirmed orders can no longer be cancelled."
         )
+
+    # Update the order status
     user_order.status = OrderStatus.CANCELED
+
+    # Commit the transaction
     commit_or_500(db,'could not cancel the order due to server issue')
+
     return user_order
-
-
-
-
-
-            

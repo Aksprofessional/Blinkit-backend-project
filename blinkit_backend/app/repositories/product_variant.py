@@ -1,9 +1,12 @@
 from sqlalchemy.orm import Session
-from app.models.category import Category
 from uuid import UUID
-from fastapi import HTTPException,status
+from fastapi import HTTPException
 from app.models.product_variant import product_variant
 from app.models.products import Products
+from datetime import datetime, timezone
+from typing import Optional
+from app.schemas.product_variant import ProductVariantCreate,ProductVariantUpdate
+
 
 def get_product_variant(db: Session, product_variant_id: UUID):
     product=db.query(product_variant).join(Products).filter(product_variant.id==product_variant_id,product_variant.isdeleted==False,Products.isdeleted==False).first()
@@ -13,19 +16,9 @@ def get_product_variant(db: Session, product_variant_id: UUID):
 def lock_product_variant_for_order(db: Session, product_variant_ids: list[UUID]):
     return db.query(product_variant).filter(product_variant.id.in_(product_variant_ids)).with_for_update().all()
 
-from datetime import datetime, timezone
-from uuid import UUID
 
-from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
 
-from typing import Optional
 
-from app.models.product_variant import product_variant
-from app.schemas.product_variant import (
-    ProductVariantCreate,
-    ProductVariantUpdate,
-)
 
 
 def create_product_variant(

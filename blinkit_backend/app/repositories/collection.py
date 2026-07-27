@@ -1,18 +1,9 @@
 from uuid import UUID
-
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
-
+from sqlalchemy.orm import Session,joinedload
 from typing import Optional
-
-from app.models.collection import Collection
 from app.schemas.collection import CollectionCreate, CollectionUpdate
-
-
-
-from sqlalchemy.orm import selectinload
-
-
+from app.models.collection import Collection
 from app.models.collection_subcategory import CollectionSubCategory
 from app.models.sub_category import SubCategory
 
@@ -145,44 +136,23 @@ def get_all_collection_customer(db: Session):
 
 
 
-
-
-
-
-from sqlalchemy.orm import Session, selectinload
-
-from app.models.category import Category
-from app.models.collection import Collection
-from app.models.collection_subcategory import CollectionSubCategory
-from app.models.sub_category import SubCategory
-
-
-def get_all_categories(db: Session):
-    return (
-        db.query(Category)
-        .options(
-            selectinload(Category.sub_categories)
-        )
-        .filter(
-            Category.is_active.is_(True)
-        )
-        .all()
-    )
-
-
-def get_collection(
+def get_collection_user(
     db: Session,
-    collection: str,
+    collection_id: UUID,
 ):
     return (
         db.query(Collection)
         .options(
-            selectinload(Collection.collection_subcategories)
-            .selectinload(CollectionSubCategory.subcategory)
-            .selectinload(SubCategory.categories)
+            # Eager load collection subcategories, subcategory details, and parent categories
+            joinedload(Collection.collection_subcategories)
+            .joinedload(CollectionSubCategory.subcategory)
+            .joinedload(SubCategory.categories)
         )
         .filter(
-            Collection.name == collection,
+            # Match the requested collection name
+            Collection.id == collection_id,
+
+            # Include only active collections
             Collection.is_active.is_(True),
         )
         .first()

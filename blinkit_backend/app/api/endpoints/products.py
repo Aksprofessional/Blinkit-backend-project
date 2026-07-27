@@ -1,7 +1,6 @@
 from fastapi import APIRouter,Depends,Query,Body
 from app.db.database import get_db
 from sqlalchemy.orm import Session
-from app.models.user import User
 from app.dependencies.auth import get_current_user
 from app.services.products import suggestion_search_product_details,get_products_service
 from app.schemas.products import ListSuggestionProducts,SuggestionProducts,ProductVariant
@@ -14,15 +13,19 @@ from app.services.products import get_product_by_id_service
 
 
 
-router = APIRouter(
-    
-)
+router = APIRouter()
+
+# Search for products based on the provided search term
 @router.get('',dependencies=[Depends(get_current_user)])
-def suggestion_search_product_api(db: Session = Depends(get_db), search: str = Query(...,ge=3)):
+def suggestion_search_product_api(db: Session = Depends(get_db), search: str = Query(...,min_length=3)):
+
+    # Retrieve matching products from the service layer
     searched_products=suggestion_search_product_details(db,search)
 
+    # Convert the products into the response schema
     response = ListSuggestionProducts(
-    products=[
+    products=
+    [
         SuggestionProducts(
             id=product.id,
             name=product.name,
@@ -41,19 +44,18 @@ def suggestion_search_product_api(db: Session = Depends(get_db), search: str = Q
     ]
 )
 
+    # Return the search results
+    return response
 
 
 
 
-@router.get(
-    "/{subcategory_id}/subcategory",
-    response_model=ProductListResponse,
-)
-def get_products(
-    subcategory_id: UUID,
-    db: Session = Depends(get_db),
-):
 
+# Retrieve all products belonging to a specific subcategory
+@router.get("/{subcategory_id}/subcategory",response_model=ProductListResponse)
+def get_products(subcategory_id: UUID,db: Session = Depends(get_db)):
+
+    # Fetch products for the given subcategory
     return get_products_service(
         db=db,
         subcategory_id=subcategory_id,
@@ -65,15 +67,11 @@ def get_products(
 
 
 
-@router.get(
-    "/{product_id}",
-    response_model=ProductDetailResponse,
-)
-def get_product_by_id_api(
-    product_id: UUID,
-    db: Session = Depends(get_db),
-):
+# Retrieve detailed information for a specific product
+@router.get("/{product_id}",response_model=ProductDetailResponse)
+def get_product_by_id_api(product_id: UUID,db: Session = Depends(get_db)):
 
+    # Fetch the product details from the service layer
     return get_product_by_id_service(
         db=db,
         product_id=product_id,
