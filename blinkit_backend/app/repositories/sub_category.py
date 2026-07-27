@@ -27,6 +27,7 @@ def create_subcategory(
             detail="SubCategory already exists"
         )
 
+    #unpacking so we could subcategory.name and all
     subcategory = SubCategory(
         **subcategory_data.model_dump()
     )

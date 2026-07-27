@@ -60,6 +60,7 @@ def add_collection_subcategory(
         mapping_data.subcategory_id,
     )
 
+    #checking if this pair is already mapped ,,we will not add.
     existing_mapping = get_mapping_by_collection_and_subcategory(
         db,
         mapping_data.collection_id,
@@ -91,7 +92,7 @@ def get_collection_subcategories(
     return get_all_collection_subcategories(db)
 
 
-
+#get tht collection_ubcategory by mapping id
 @router.get("/{mapping_id}")
 def get_collection_subcategory(
     mapping_id: UUID,

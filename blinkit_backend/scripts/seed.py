@@ -16,6 +16,7 @@ from app.models.delivery_address import delivery_address
 
 db = SessionLocal()
 
+#all the dummy data here in this file
 category_names = [
     "Fruits & Vegetables",
     "Dairy & Breakfast",

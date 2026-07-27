@@ -10,15 +10,17 @@ pwd_context = CryptContext(
     deprecated="auto"
 )
 
-
+#func to hash password
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
 
+#func to compare and verify password entered and stored in db
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
+#func to create access token jwt
 def create_access_token(user_id: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=Setting.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -57,10 +59,11 @@ def create_refresh_token(user_id: str) -> str:
     )
 
 
-
+#creating another jwt token for email verification which will be sent in link to api
 def create_email_verification_token(
     email: str,
 ):
+    #setting the expiry for 24 hours of token that if user doesnt use it , it will expire.
     expire = datetime.now(
         timezone.utc
     ) + timedelta(hours=24)

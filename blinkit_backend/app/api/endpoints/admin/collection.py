@@ -29,13 +29,11 @@ router = APIRouter(
 )
 
 
-
+#post api to add collection
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
 )
-
-
 def add_collection(
     collection_data: CollectionCreate,
     db: Session = Depends(get_db),

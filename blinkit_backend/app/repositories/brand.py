@@ -29,7 +29,7 @@ def get_brand_by_name(db: Session, brand_name: str):
 
 
 
-
+#added limit offset pagination for admin apis and search functionality also
 def get_all_brands(
     db: Session,
     skip: int = 0,

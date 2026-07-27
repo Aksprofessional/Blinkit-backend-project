@@ -29,7 +29,7 @@ router = APIRouter(
 )
 
 
-
+#post api to add brand
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED
@@ -60,7 +60,7 @@ def add_brand(
 
 
 
-
+#have added limit offset pagination and search functionality.
 @router.get("")
 def get_brands(
     page: int = 1,
@@ -92,7 +92,7 @@ def get_brands(
 
 
 
-
+#get api using brand id
 @router.get("/{brand_id}")
 def get_brand(
     brand_id: UUID,

@@ -4,7 +4,7 @@ from fastapi_mail import MessageType
 
 from app.core.mail import conf
 
-
+#Sending an email requires connecting to an external server. This can take 2 to 5 seconds. async ensures your API does not freeze during this pause.
 async def send_verification_email(
     email: str,
     token: str,

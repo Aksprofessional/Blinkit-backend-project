@@ -9,7 +9,7 @@ from sqlalchemy import or_
 
 from app.models.user import User
 
-
+#db query to get users
 def get_all_users(
     db: Session,
     skip: int = 0,
@@ -61,7 +61,7 @@ def get_user_by_id(
 
 
 
-
+#disabling user by admin by setting is_active=False
 def disable_user(
     db: Session,
     user: User,
