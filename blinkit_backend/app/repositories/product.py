@@ -22,7 +22,7 @@ def create_product(db: Session, product_data: ProductCreate, image: UploadFile):
             detail="Product already exists"
         )
 
-    image_url=upload_image(image)
+    image_url=upload_image(image,Products.__tablename__)
 
 
     
@@ -132,7 +132,7 @@ def update_product(
             value
         )
     if image is not None:
-        image_url=upload_image(image)
+        image_url=upload_image(image,Products.__tablename__)
         product.image=image_url.get("url")
         old_public_id=product.image_public_id
         product.image_public_id=image_url.get("public_id")
