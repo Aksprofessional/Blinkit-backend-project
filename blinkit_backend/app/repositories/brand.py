@@ -69,7 +69,7 @@ def create_brand(
     logo: UploadFile
 ):
     db_brand = brand(**brand_data.model_dump())
-    image_url=upload_image(logo)
+    image_url=upload_image(logo,brand.__tablename__)
     db_brand.logo=image_url.get("url")
     db_brand.image_public_id=image_url.get("public_id")
     db.add(db_brand)
@@ -103,7 +103,7 @@ def update_brand(
             value
         )
     if logo is not None:
-        image_url=upload_image(logo)
+        image_url=upload_image(logo,brand.__tablename__)
         db_brand.logo=image_url.get("url")
         public_id_old=db_brand.image_public_id
         db_brand.image_public_id=image_url.get("public_id")

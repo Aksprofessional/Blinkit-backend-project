@@ -20,10 +20,10 @@ def validate_image(image:UploadFile):
         )
 
 #uploading a file to cloudinary and getting the link
-def upload_image(image: UploadFile):
+def upload_image(image: UploadFile,folder: str):
     validate_image(image)
     try:
-        result = uploader.upload(image.file, folder="products")
+        result = uploader.upload(image.file, folder=folder)
         public_id = result["public_id"]
         image_url = result["secure_url"]
     except Exception as e:
@@ -40,8 +40,8 @@ def upload_image(image: UploadFile):
 
 
 
-
-def destroy_image(public_id):
+#destroying a image after uploading new image
+def destroy_image(public_id: str):
 
     try:
         uploader.destroy(public_id)
