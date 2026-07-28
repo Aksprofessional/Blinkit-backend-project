@@ -41,3 +41,9 @@ class Products(Base):
         'brand',
         back_populates='product'
     )
+
+    tags = relationship(
+        "ProductTag",
+        back_populates="product",
+        cascade="all, delete-orphan",
+    )

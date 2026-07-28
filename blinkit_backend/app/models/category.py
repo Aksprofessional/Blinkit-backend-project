@@ -2,6 +2,7 @@ from app.db.database import Base
 from sqlalchemy import Column,String,UUID,Boolean
 from sqlalchemy.orm import relationship
 import uuid
+from sqlalchemy import ForeignKey
 
 class Category(Base):
     __tablename__="category"
@@ -15,4 +16,15 @@ class Category(Base):
     sub_categories=relationship(
         'SubCategory',
         back_populates='categories'
+    )
+
+    main_category = relationship(
+        "MainCategory",
+        back_populates="categories",
+    )
+
+    main_category_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("main_categories.id"),
+        nullable=False,
     )

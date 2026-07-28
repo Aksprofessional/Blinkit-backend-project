@@ -14,8 +14,7 @@ class Collection(Base):
 
     is_active = Column(Boolean, default=True)
 
-    collection_subcategories = relationship(
-        "CollectionSubCategory",
+    main_categories = relationship(
+        "MainCategory",
         back_populates="collection",
-        cascade="all, delete-orphan"
     )

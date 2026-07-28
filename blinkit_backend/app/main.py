@@ -10,8 +10,10 @@ from app.models.orders import Order
 from app.models.order_items import order_items
 from app.models.delivery_address import delivery_address
 from app.models.collection import Collection
-from app.models.collection_subcategory import CollectionSubCategory
-from app.api.endpoints import cart_item,delivery_addresses,orders,products,collections, categories
+from app.models.tag import Tag
+from app.models.product_tag import ProductTag
+from app.models.main_category import MainCategory
+from app.api.endpoints import cart_item,delivery_addresses,orders,products,collections,categories
 from fastapi import FastAPI
 
 
@@ -20,6 +22,7 @@ from app.api.auth import router as auth_router
 from app.api.endpoints.admin.category import (
     router as admin_category_router,
 )
+from app.api.endpoints.admin.main_category import router as main_category_router
 from app.api.endpoints.admin.brand import router as brand_router
 from app.api.endpoints.admin.product import router as product_router
 from app.api.endpoints.admin.sub_category import router as subcategory_router
@@ -40,6 +43,11 @@ app.include_router(products.router, prefix='/api/products',tags=["Customer Produ
 app.include_router(collections.router, prefix='/api/collections', tags=["Customer collection"])
 app.include_router(categories.router, prefix='/api/categories',tags=["Customer categories"])
 
+
+app.include_router(
+    main_category_router,
+    prefix="/admin"
+)
 
 app.include_router(
     admin_category_router,

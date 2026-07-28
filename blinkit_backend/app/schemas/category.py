@@ -4,11 +4,13 @@ from uuid import UUID
 
 class CategoryCreate(BaseModel):
     name: str
+    main_category_id: UUID
     is_active: bool = True
 
 
 class CategoryUpdate(BaseModel):
     name: Optional[str]= None
+    main_category_id: UUID | None = None
     is_active: Optional[bool] = None
 
 

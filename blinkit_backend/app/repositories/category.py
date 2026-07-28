@@ -6,8 +6,8 @@ from app.schemas.category import CategoryCreate
 from typing import Optional
 from sqlalchemy.orm import selectinload
 from app.models.collection import Collection
-from app.models.collection_subcategory import CollectionSubCategory
 from app.models.sub_category import SubCategory
+from app.models.main_category import MainCategory
 
 
 def get_category_by_id(db: Session, category_id: UUID):
@@ -19,20 +19,47 @@ def get_category_by_id(db: Session, category_id: UUID):
         )
     return category
 
-def add_category(db: Session, category_data: CategoryCreate):
+
+
+
+def add_category(
+    db: Session,
+    category_data: CategoryCreate,
+):
     try:
-        db_category=Category(**category_data.model_dump())
+        db_main_category = db.get(
+            MainCategory,
+            category_data.main_category_id,
+        )
+
+        if db_main_category is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Main category not found",
+            )
+
+        db_category = Category(
+            **category_data.model_dump()
+        )
+
         db.add(db_category)
         db.commit()
         db.refresh(db_category)
+
         return db_category
+
+    except HTTPException:
+        raise
+
     except Exception:
         db.rollback()
         raise HTTPException(
             status_code=500,
             detail="Failed to create category."
         )
-        
+
+
+    
 
 
 def get_category_by_name(db: Session, category_name: str):
