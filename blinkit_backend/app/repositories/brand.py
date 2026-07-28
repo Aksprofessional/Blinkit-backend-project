@@ -1,9 +1,10 @@
 from uuid import UUID
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status,UploadFile
 from sqlalchemy.orm import Session
 from app.models.brand import brand
 from app.schemas.brand import BrandCreate, BrandUpdate
 from typing import Optional
+from app.services.image_sevice import upload_image,destroy_image
 
 
 def get_brand_by_id(db: Session, brand_id: UUID):
@@ -64,10 +65,13 @@ def get_all_brands(
 
 def create_brand(
     db: Session,
-    brand_data: BrandCreate
+    brand_data: BrandCreate,
+    logo: UploadFile
 ):
     db_brand = brand(**brand_data.model_dump())
-
+    image_url=upload_image(logo)
+    db_brand.logo=image_url.get("url")
+    db_brand.image_public_id=image_url.get("public_id")
     db.add(db_brand)
     db.commit()
     db.refresh(db_brand)
@@ -78,10 +82,12 @@ def create_brand(
 def update_brand(
     db: Session,
     db_brand: brand,
-    brand_data: BrandUpdate
+    brand_data: BrandUpdate,
+    logo : UploadFile | None
 ):
     update_data = brand_data.model_dump(
-        exclude_unset=True
+        exclude_unset=True,
+        exclude_none=True
     )
 
     if not update_data:
@@ -96,9 +102,20 @@ def update_brand(
             key,
             value
         )
+    if logo is not None:
+        image_url=upload_image(logo)
+        db_brand.logo=image_url.get("url")
+        public_id_old=db_brand.image_public_id
+        db_brand.image_public_id=image_url.get("public_id")
+        db.commit()
+        db.refresh(db_brand)
+        destroy_image(public_id_old)
+    else:
+        db.commit()
+        db.refresh(db_brand)
 
-    db.commit()
-    db.refresh(db_brand)
+
+    
 
     return db_brand
 

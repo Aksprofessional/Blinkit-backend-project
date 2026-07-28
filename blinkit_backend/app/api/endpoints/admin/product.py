@@ -1,8 +1,8 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status,UploadFile,File
 from sqlalchemy.orm import Session
-
+from app.schemas.products import get_product,update_product_pydantic
 from app.db.database import get_db
 from app.schemas.products import ProductCreate, ProductUpdate
 from app.repositories.product import (
@@ -32,15 +32,19 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED
 )
 def add_product(
-    product: ProductCreate,
+    product: ProductCreate = Depends(get_product),
+    image: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    
+    
 ):
     require_admin(current_user)
 
     return create_product(
         db,
-        product
+        product,
+        image
     )
 
 
@@ -103,7 +107,8 @@ def get_product(
 @router.patch("/{product_id}")
 def edit_product(
     product_id: UUID,
-    product: ProductUpdate,
+    product: ProductUpdate = Depends(update_product_pydantic),
+    image: UploadFile | None = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -112,7 +117,8 @@ def edit_product(
     return update_product(
         db,
         product_id,
-        product
+        product,
+        image
     )
 
 

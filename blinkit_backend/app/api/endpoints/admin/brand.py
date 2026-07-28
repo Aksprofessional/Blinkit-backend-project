@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile,File
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -9,10 +9,7 @@ from app.dependencies.auth import get_current_user
 
 from app.models.user import User
 
-from app.schemas.brand import (
-    BrandCreate,
-    BrandUpdate
-)
+from app.schemas.brand import BrandCreate,BrandUpdate,add_brand_pydantic,update_brand_pydantic
 
 from app.repositories.brand import (
     create_brand,
@@ -35,7 +32,8 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED
 )
 def add_brand(
-    brand_data: BrandCreate,
+    brand_data: BrandCreate = Depends(add_brand_pydantic),
+    logo: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -54,7 +52,8 @@ def add_brand(
     
     return create_brand(
     db,
-    brand_data
+    brand_data,
+    logo
     )
 
 
@@ -112,7 +111,8 @@ def get_brand(
 @router.patch("/{brand_id}")
 def update_brand_details(
     brand_id: UUID,
-    brand_data: BrandUpdate,
+    brand_data: BrandUpdate = Depends(update_brand_pydantic),
+    logo: UploadFile | None =File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -126,7 +126,8 @@ def update_brand_details(
     return update_brand(
         db,
         db_brand,
-        brand_data
+        brand_data,
+        logo
     )
 
 

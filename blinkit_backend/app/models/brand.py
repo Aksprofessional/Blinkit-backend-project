@@ -10,6 +10,7 @@ class brand(Base):
     is_active= Column(Boolean,default=True,nullable=False)
     name= Column(String,nullable=False)
     logo= Column(String, nullable=True)
+    image_public_id=Column(String,nullable=True)
 
 
     #relationship

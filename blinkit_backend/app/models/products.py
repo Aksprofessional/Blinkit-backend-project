@@ -21,6 +21,7 @@ class Products(Base):
     sub_category_id= Column(UUID(as_uuid=True), ForeignKey('subcategory.id'),nullable=False)
     isdeleted= Column(Boolean,default=False,nullable=False)
     delete_timestamp=Column(DateTime(timezone=True),nullable=True)
+    image_public_id=Column(String,nullable=True)
 
 
 

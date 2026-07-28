@@ -2,22 +2,47 @@ from pydantic import BaseModel
 from typing import Optional
 from uuid import UUID
 from decimal import Decimal
+from fastapi import Form
 
 class ProductCreate(BaseModel):
-    name: str
-    image: str
+    name: str 
     description: str
     brand_id: UUID
     sub_category_id: UUID
 
 
+def get_product(
+    name: str = Form(...),
+    description: str = Form(...),
+    brand_id: UUID = Form(...),
+    sub_category_id: UUID = Form(...),
+):
+    return ProductCreate(
+        name=name,
+        description=description,
+        brand_id=brand_id,
+        sub_category_id=sub_category_id,
+    )
+
+
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
-    image: Optional[str] = None
     description: Optional[str] = None
     brand_id: Optional[UUID] = None
     sub_category_id: Optional[UUID] = None
 
+def update_product_pydantic(
+    name: str | None = Form(None),
+    description: str | None = Form(None),
+    brand_id: UUID | None = Form(None),
+    sub_category_id: UUID | None = Form(None),
+):
+    return ProductUpdate(
+        name=name,
+        description=description,
+        brand_id=brand_id,
+        sub_category_id=sub_category_id,
+    )
 
 class ProductVariant(BaseModel):
     id: UUID

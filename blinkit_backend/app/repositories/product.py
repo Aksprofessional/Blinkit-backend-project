@@ -1,13 +1,16 @@
 from uuid import UUID
 from datetime import datetime, timezone
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status,UploadFile
 from sqlalchemy.orm import Session,joinedload
 from typing import Optional 
 from app.models.product_variant import product_variant
 from app.models.products import Products
 from app.schemas.products import ProductCreate, ProductUpdate
+from app.services.image_sevice import upload_image,destroy_image
 
-def create_product(db: Session, product_data: ProductCreate):
+
+
+def create_product(db: Session, product_data: ProductCreate, image: UploadFile):
 
     existing_product = db.query(Products).filter(
         Products.name == product_data.name
@@ -19,7 +22,21 @@ def create_product(db: Session, product_data: ProductCreate):
             detail="Product already exists"
         )
 
-    product = Products(**product_data.model_dump())
+    image_url=upload_image(image)
+
+
+    
+    
+
+    product = Products(
+        name=product_data.name,
+        image= image_url.get("url"),
+        description= product_data.description,
+        brand_id= product_data.brand_id,
+        sub_category_id= product_data.sub_category_id,
+        image_public_id=image_url.get("public_id")
+
+    )
 
     db.add(product)
     db.commit()
@@ -95,7 +112,8 @@ def get_all_products(
 def update_product(
     db: Session,
     product_id: UUID,
-    product_data: ProductUpdate
+    product_data: ProductUpdate,
+    image: UploadFile | None
 ):
     product = get_product_by_id(
         db,
@@ -103,7 +121,8 @@ def update_product(
     )
 
     update_data = product_data.model_dump(
-        exclude_unset=True
+        exclude_unset=True,
+        exclude_none=True,
     )
 
     for key, value in update_data.items():
@@ -112,10 +131,19 @@ def update_product(
             key,
             value
         )
+    if image is not None:
+        image_url=upload_image(image)
+        product.image=image_url.get("url")
+        old_public_id=product.image_public_id
+        product.image_public_id=image_url.get("public_id")
+        db.commit()
+        db.refresh(product)
+        destroy_image(old_public_id)
+    else:
+        db.commit()
+        db.refresh(product)
 
-    db.commit()
-    db.refresh(product)
-
+        
     return product
 
 
