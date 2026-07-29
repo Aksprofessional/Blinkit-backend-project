@@ -22,15 +22,18 @@ from app.api.auth import router as auth_router
 from app.api.endpoints.admin.category import (
     router as admin_category_router,
 )
-from app.api.endpoints.admin.main_category import router as main_category_router
 from app.api.endpoints.admin.brand import router as brand_router
 from app.api.endpoints.admin.product import router as product_router
 from app.api.endpoints.admin.sub_category import router as subcategory_router
 from app.api.endpoints.admin.product_variant import router as product_variant_router
 from app.api.endpoints.admin.collection import router as collection_router
-from app.api.endpoints.admin.collection_subcategory import router as collection_subcategory_router
 from app.api.endpoints.admin.user import router as admin_user_router
 from app.api.endpoints.user1 import router as user_router
+from app.api.endpoints.admin.tag import router as tag_router
+from app.api.endpoints.admin.section import router as section_router
+from app.api.endpoints.admin.main_category import router as main_category_router
+
+from app.api.endpoints.admin.product_tag import router as product_tag_router
 
 
 app = FastAPI(title="Blinkit Backend API")
@@ -43,11 +46,6 @@ app.include_router(products.router, prefix='/api/products',tags=["Customer Produ
 app.include_router(collections.router, prefix='/api/collections', tags=["Customer collection"])
 app.include_router(categories.router, prefix='/api/categories',tags=["Customer categories"])
 
-
-app.include_router(
-    main_category_router,
-    prefix="/admin"
-)
 
 app.include_router(
     admin_category_router,
@@ -80,15 +78,32 @@ app.include_router(
 )
 
 app.include_router(
-    collection_subcategory_router,
-    prefix="/admin",
-)
-
-app.include_router(
     admin_user_router,
     prefix="/admin",
 )
 
 app.include_router(
     user_router,
+)
+
+
+app.include_router(
+    tag_router,
+    prefix="/admin",
+)
+
+
+app.include_router(
+    section_router,
+    prefix="/admin",
+)
+
+app.include_router(
+    product_tag_router,
+    prefix="/admin",
+)
+
+app.include_router(
+    main_category_router,
+    prefix="/admin",
 )

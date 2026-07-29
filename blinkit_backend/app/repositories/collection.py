@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session,joinedload
 from typing import Optional
 from app.schemas.collection import CollectionCreate, CollectionUpdate
 from app.models.collection import Collection
-from app.models.collection_subcategory import CollectionSubCategory
 from app.models.sub_category import SubCategory
 
 
@@ -145,7 +144,7 @@ def get_collection_user(
         .options(
             # Eager load collection subcategories, subcategory details, and parent categories
             joinedload(Collection.collection_subcategories)
-            .joinedload(CollectionSubCategory.subcategory)
+            #.joinedload(CollectionSubCategory.subcategory)
             .joinedload(SubCategory.categories)
         )
         .filter(

@@ -22,7 +22,9 @@ class SubCategory(Base):
         back_populates='sub_categories'
     )
 
-    collection_subcategories = relationship(
-        "CollectionSubCategory",
-        back_populates="subcategory"
+
+    tags = relationship(
+        "SubCategoryTag",
+        back_populates="sub_category",
+        cascade="all, delete-orphan",
     )

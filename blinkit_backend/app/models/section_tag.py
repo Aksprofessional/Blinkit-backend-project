@@ -2,17 +2,18 @@ import uuid
 
 from sqlalchemy import (
     Column,
-    ForeignKey,
     UUID,
+    ForeignKey,
     UniqueConstraint,
 )
-from sqlalchemy.orm import relationship
 
+from sqlalchemy.orm import relationship
+from sqlalchemy import Integer
 from app.db.database import Base
 
 
-class ProductTag(Base):
-    __tablename__ = "product_tags"
+class SectionTag(Base):
+    __tablename__ = "section_tags"
 
     id = Column(
         UUID(as_uuid=True),
@@ -20,9 +21,9 @@ class ProductTag(Base):
         default=uuid.uuid4,
     )
 
-    product_id = Column(
+    section_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("products.id"),
+        ForeignKey("sections.id"),
         nullable=False,
     )
 
@@ -32,20 +33,27 @@ class ProductTag(Base):
         nullable=False,
     )
 
-    product = relationship(
-        "Products",
+    group_no = Column(
+        Integer,
+        nullable=False,
+        default=1
+    )
+
+    section = relationship(
+        "Section",
         back_populates="tags",
     )
 
     tag = relationship(
         "Tag",
-        back_populates="products",
+        back_populates="sections",
     )
+
 
     __table_args__ = (
         UniqueConstraint(
-            "product_id",
+            "section_id",
             "tag_id",
-            name="uq_product_tag",
+            name="uq_section_tag",
         ),
     )

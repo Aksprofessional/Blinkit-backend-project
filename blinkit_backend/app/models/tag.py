@@ -45,3 +45,9 @@ class Tag(Base):
         back_populates="tag",
         cascade="all, delete-orphan",
     )
+
+    sections = relationship(
+        "SectionTag",
+        back_populates="tag",
+        cascade="all, delete-orphan"
+    )

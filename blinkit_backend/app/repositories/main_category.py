@@ -3,6 +3,7 @@ from typing import Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from app.models.collection import Collection
 
 from app.models.main_category import MainCategory
 from app.schemas.main_category import (
@@ -74,9 +75,23 @@ def create_main_category(
     db: Session,
     main_category_data: MainCategoryCreate,
 ):
+
+    collection = db.get(
+        Collection,
+        main_category_data.collection_id
+    )
+
+    if not collection:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Collection not found"
+        )
+
+
     db_main_category = MainCategory(
         **main_category_data.model_dump()
     )
+
 
     db.add(db_main_category)
     db.commit()

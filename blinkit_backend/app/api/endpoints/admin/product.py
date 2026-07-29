@@ -36,8 +36,6 @@ def add_product(
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    
-    
 ):
     require_admin(current_user)
 

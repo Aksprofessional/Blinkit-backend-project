@@ -3,7 +3,6 @@ from app.schemas.collection import CollectionResponse
 from sqlalchemy.orm import Session, selectinload
 from app.models.category import Category
 from app.models.collection import Collection
-from app.models.collection_subcategory import CollectionSubCategory
 from app.models.sub_category import SubCategory
 
 

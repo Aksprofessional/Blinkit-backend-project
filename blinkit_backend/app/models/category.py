@@ -28,3 +28,9 @@ class Category(Base):
         ForeignKey("main_categories.id"),
         nullable=False,
     )
+
+    tags = relationship(
+        "CategoryTag",
+        back_populates="category",
+        cascade="all, delete-orphan",
+    )

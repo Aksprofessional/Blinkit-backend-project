@@ -21,7 +21,12 @@ from app.models.orders import Order
 from app.models.sub_category import SubCategory
 from app.models.brand import brand
 from app.models.collection import Collection
-from app.models.collection_subcategory import CollectionSubCategory
+from app.models.main_category import MainCategory
+from app.models.product_tag import ProductTag
+from app.models.tag import Tag
+from app.models.section import Section
+from app.models.section_tag import SectionTag
+
 
 # This is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

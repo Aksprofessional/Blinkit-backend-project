@@ -18,3 +18,9 @@ class Collection(Base):
         "MainCategory",
         back_populates="collection",
     )
+    
+    sections = relationship(
+        "Section",
+        back_populates="collection",
+        cascade="all, delete-orphan",
+    )
