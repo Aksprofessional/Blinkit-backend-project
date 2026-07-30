@@ -7,8 +7,8 @@ from app.db.database import get_db
 from app.models.user import User
 from app.schemas.section import SectionCreate,SectionUpdate
 from app.repositories.section import create_section,delete_section,get_all_sections,get_section_by_id,update_section
-from app.schemas.tag import SectionTagMappingRequest
-from app.services.admin.section import change_section_tag
+
+
 router = APIRouter(
     prefix="/sections",
     tags=["Admin Sections"],
@@ -97,9 +97,4 @@ def remove_section(
 
 
 
-
-@router.put('/{section_id}/tags')
-def add_tag_section_api(section_id: UUID, tag_data: SectionTagMappingRequest,db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    require_admin(current_user)
-    return change_section_tag(db,tag_data,section_id)
 
