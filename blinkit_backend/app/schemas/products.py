@@ -11,6 +11,7 @@ class ProductCreate(BaseModel):
     sub_category_id: UUID
 
 
+
 def get_product(
     name: str = Form(...),
     description: str = Form(...),

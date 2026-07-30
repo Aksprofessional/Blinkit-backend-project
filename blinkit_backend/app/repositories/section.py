@@ -10,6 +10,7 @@ from app.schemas.section import (
     SectionCreate,
     SectionUpdate,
 )
+from app.models.section_tag import SectionTag
 
 
 def get_section_by_id(
@@ -135,3 +136,10 @@ def delete_section(
     return {
         "message": "Section deleted successfully."
     }
+
+
+
+
+def section_tag_mapping_delete(db: Session, section_id: UUID):
+    db.query(SectionTag).filter(SectionTag.section_id==section_id).delete()
+    

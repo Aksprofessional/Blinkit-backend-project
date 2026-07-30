@@ -143,3 +143,16 @@ def delete_tag(
     return {
         "message": "Tag deleted successfully."
     }
+
+
+
+def get_all_tag_by_id(db: Session, tag_ids: set[UUID]):
+    db_tags=db.query(Tag.id).filter(Tag.id.in_(tag_ids)).all()
+    if len(db_tags) != len(tag_ids):
+        missing_ids=tag_ids-db_tags
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="some of the tags are not found.",
+            missing_ids=f"tags not found, {missing_ids}."
+        )
+    return db_tags

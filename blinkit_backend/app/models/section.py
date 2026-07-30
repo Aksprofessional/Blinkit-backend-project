@@ -18,46 +18,19 @@ class Section(Base):
     __tablename__ = "sections"
 
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-    )
+    id = Column(UUID(as_uuid=True),primary_key=True,default=uuid.uuid4)
+    title = Column(String,nullable=False)
+    display_order = Column(Integer,default=0)
+    is_active = Column(Boolean,default=True,nullable=False,)
+    collection_id = Column(UUID(as_uuid=True),ForeignKey("collections.id"),nullable=False)
 
-
-    title = Column(
-        String,
-        nullable=False,
-    )
-
-
-    display_order = Column(
-        Integer,
-        default=0,
-    )
-
-
-    is_active = Column(
-        Boolean,
-        default=True,
-        nullable=False,
-    )
-
-
-    collection_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("collections.id"),
-        nullable=False,
-    )
-
-
+    #relationship
     collection = relationship(
         "Collection",
         back_populates="sections",
     )
 
-    tags = relationship(
+    section_tags = relationship(
         "SectionTag",
         back_populates="section",
-        cascade="all, delete-orphan"
     )
