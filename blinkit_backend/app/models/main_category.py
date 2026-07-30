@@ -50,9 +50,4 @@ class MainCategory(Base):
         back_populates="main_categories",
     )
 
-    tags = relationship(
-        "MainCategoryTag",
-        back_populates="main_category",
-        cascade="all, delete-orphan",
-    )
     

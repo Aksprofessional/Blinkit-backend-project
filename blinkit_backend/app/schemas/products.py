@@ -9,6 +9,8 @@ class ProductCreate(BaseModel):
     description: str
     brand_id: UUID
     sub_category_id: UUID
+    tag_ids: list[UUID] = []
+
 
 
 def get_product(
@@ -16,12 +18,14 @@ def get_product(
     description: str = Form(...),
     brand_id: UUID = Form(...),
     sub_category_id: UUID = Form(...),
+    tag_ids: list[UUID] = Form(default=[]),
 ):
     return ProductCreate(
         name=name,
         description=description,
         brand_id=brand_id,
         sub_category_id=sub_category_id,
+        tag_ids=tag_ids,
     )
 
 
@@ -30,18 +34,21 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     brand_id: Optional[UUID] = None
     sub_category_id: Optional[UUID] = None
+    tag_ids: list[UUID] | None = None
 
 def update_product_pydantic(
     name: str | None = Form(None),
     description: str | None = Form(None),
     brand_id: UUID | None = Form(None),
     sub_category_id: UUID | None = Form(None),
+    tag_ids: list[UUID] | None = Form(None),
 ):
     return ProductUpdate(
         name=name,
         description=description,
         brand_id=brand_id,
         sub_category_id=sub_category_id,
+        tag_ids=tag_ids,
     )
 
 class ProductVariant(BaseModel):

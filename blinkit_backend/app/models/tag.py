@@ -49,5 +49,4 @@ class Tag(Base):
     sections = relationship(
         "SectionTag",
         back_populates="tag",
-        cascade="all, delete-orphan"
     )

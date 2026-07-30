@@ -12,6 +12,7 @@ from app.models.delivery_address import delivery_address
 from app.models.collection import Collection
 from app.models.tag import Tag
 from app.models.product_tag import ProductTag
+from app.models.section_tag import SectionTag
 from app.models.main_category import MainCategory
 from app.api.endpoints import cart_item,delivery_addresses,orders,products,collections,categories
 from fastapi import FastAPI

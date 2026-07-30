@@ -67,7 +67,7 @@ def get_section(
     )
 
 
-@router.put("/{section_id}")
+@router.patch("/{section_id}")
 def edit_section(
     section_id: UUID,
     section: SectionUpdate,
@@ -75,6 +75,7 @@ def edit_section(
     current_user: User = Depends(get_current_user),
 ):
     require_admin(current_user)
+
     db_section = get_section_by_id(
         db,
         section_id,
