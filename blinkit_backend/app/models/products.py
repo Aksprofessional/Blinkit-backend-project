@@ -1,4 +1,4 @@
-from sqlalchemy import Column,UUID,String,ForeignKey,Boolean,DateTime
+from sqlalchemy import Column,UUID,String,ForeignKey,Boolean,DateTime,func
 from app.db.database import Base
 from sqlalchemy.orm import relationship
 import uuid
@@ -22,6 +22,7 @@ class Products(Base):
     isdeleted= Column(Boolean,default=False,nullable=False)
     delete_timestamp=Column(DateTime(timezone=True),nullable=True)
     image_public_id=Column(String,nullable=True)
+    created_at= Column(DateTime,server_default=func.now(),nullable=True)
 
 
 

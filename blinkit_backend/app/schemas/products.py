@@ -75,3 +75,5 @@ class ProductResponse(BaseModel):
 
 class ProductListResponse(BaseModel):
     products: list[ProductResponse]
+    next_cursor: str | None = None
+    has_next: bool

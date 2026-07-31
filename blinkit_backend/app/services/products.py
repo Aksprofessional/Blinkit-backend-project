@@ -4,7 +4,7 @@ from app.repositories.product_variant import get_product_variant
 from sqlalchemy.orm import Session
 from app.repositories.product import suggestion_search_product_customer
 from fastapi import HTTPException
-
+from app.utils.cursor import encode_cursor,decode_cursor
 from app.repositories.product import get_product_by_id
 from app.schemas.product_variant import ProductDetailResponse,ProductVariantResponse
 
@@ -50,15 +50,39 @@ from app.schemas.products import (
 def get_products_service(
     db,
     subcategory_id,
+    limit: int,
+    cursor: str | None,
 ):
 
-    # Fetch products for the given subcategory
+    cursor_created_at = None
+    cursor_id = None
+
+    if cursor:
+        cursor_created_at, cursor_id = decode_cursor(cursor)
+
     products = get_products_by_subcategory(
-        db,
-        subcategory_id,
+        db=db,
+        subcategory_id=subcategory_id,
+        limit=limit,
+        cursor_created_at=cursor_created_at,
+        cursor_id=cursor_id,
     )
 
-    # Convert the products into the response schema
+    has_next = len(products) > limit
+
+    if has_next:
+        products = products[:limit]
+
+    next_cursor = None
+
+    if has_next:
+        last_product = products[-1]
+
+        next_cursor = encode_cursor(
+            created_at=last_product.created_at,
+            cursor_id=last_product.id,
+        )
+
     return ProductListResponse(
         products=[
             ProductResponse(
@@ -77,10 +101,10 @@ def get_products_service(
                 ],
             )
             for product in products
-        ]
+        ],
+        next_cursor=next_cursor,
+        has_next=has_next,
     )
-
-
 
 
 # Retrieve detailed information for a specific product

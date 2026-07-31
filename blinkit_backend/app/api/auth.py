@@ -44,6 +44,7 @@ async def register(
             detail="Email already registered",
         )
 
+
     hashed_password = hash_password(
         user.password
     )

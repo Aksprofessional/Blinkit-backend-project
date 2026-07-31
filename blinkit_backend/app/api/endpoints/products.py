@@ -52,23 +52,29 @@ def suggestion_search_product_api(db: Session = Depends(get_db), search: str = Q
 
 
 # Retrieve all products belonging to a specific subcategory
-@router.get("/{subcategory_id}/subcategory",response_model=ProductListResponse)
-def get_products(subcategory_id: UUID,db: Session = Depends(get_db)):
+@router.get(
+    "/{subcategory_id}/subcategory",
+    response_model=ProductListResponse,
+    dependencies=[Depends(get_current_user)]
+)
+def get_products(
+    subcategory_id: UUID,
+    limit: int = Query(1, ge=1, le=50),
+    cursor: str | None = Query(None),
+    db: Session = Depends(get_db),
+):
 
-    # Fetch products for the given subcategory
     return get_products_service(
         db=db,
         subcategory_id=subcategory_id,
+        limit=limit,
+        cursor=cursor,
     )
 
 
 
-
-
-
-
 # Retrieve detailed information for a specific product
-@router.get("/{product_id}",response_model=ProductDetailResponse)
+@router.get("/{product_id}",response_model=ProductDetailResponse,dependencies=[Depends(get_current_user)])
 def get_product_by_id_api(product_id: UUID,db: Session = Depends(get_db)):
 
     # Fetch the product details from the service layer

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from fastapi import HTTPException, status,UploadFile
 from sqlalchemy.orm import Session,joinedload
 from typing import Optional 
+from sqlalchemy import or_,and_
 from app.models.product_variant import product_variant
 from app.models.products import Products
 from app.schemas.products import ProductCreate, ProductUpdate
@@ -186,9 +187,12 @@ def suggestion_search_product_customer(db: Session, search_param: str):
 def get_products_by_subcategory(
     db: Session,
     subcategory_id,
+    limit: int,
+    cursor_created_at=None,
+    cursor_id=None,
 ):
 
-    return (
+    query = (
         db.query(Products)
         .options(
             joinedload(Products.product_variants)
@@ -197,5 +201,25 @@ def get_products_by_subcategory(
             Products.sub_category_id == subcategory_id,
             Products.isdeleted.is_(False),
         )
+    )
+
+    if cursor_created_at and cursor_id:
+        query = query.filter(
+            or_(
+                Products.created_at < cursor_created_at,
+                and_(
+                    Products.created_at == cursor_created_at,
+                    Products.id < cursor_id,
+                ),
+            )
+        )
+
+    return (
+        query
+        .order_by(
+            Products.created_at.desc(),
+            Products.id.desc(),
+        )
+        .limit(limit + 1)
         .all()
     )
