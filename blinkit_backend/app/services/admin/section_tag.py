@@ -3,16 +3,16 @@ from app.schemas.tag import SectionTagMappingRequest
 from uuid import UUID
 from sqlalchemy import insert
 from app.repositories.section import get_section_by_id,section_tag_mapping_delete
-from app.repositories.tag import get_all_tag_by_id
 from app.repositories.section_tag import create_section_tag_row
 from app.models.section_tag import SectionTag
+from app.schemas.section_tag import SectionTagSchema
 from app.models.user import User
 from fastapi import HTTPException,status
 from app.utils.db import commit_or_500
 from app.schemas.section import SectionCreate
 from app.repositories.collection import get_collection_by_id
 from app.repositories.section import create_section
-from app.repositories.tag import get_all_tag_by_id
+from app.repositories.tag import check_all_tag_valid_by_id,get_tag_by_section
 
 
 # def add_section_service(db: Session, section_data: SectionCreate):
@@ -29,7 +29,7 @@ def change_section_tag(db: Session, tag_data: SectionTagMappingRequest, section_
     tag_ids={id 
              for tags in tag_data.tags
              for id in tags.tag_id}
-    get_all_tag_by_id(db,tag_ids)
+    check_all_tag_valid_by_id(db,tag_ids)
     section_tag_mapping_delete(db,section_id)
     group_no=1
     rows=[]
@@ -43,6 +43,14 @@ def change_section_tag(db: Session, tag_data: SectionTagMappingRequest, section_
     return{
         "message":"tags added succesfully to section"
     }
+
+
+def get_section_tag_service(db: Session, section_id: UUID):
+    tags=get_tag_by_section(db,section_id)
+    tag_with_group_no=[SectionTagSchema.model_validate(tag)
+                       for tag in tags]
+    return tag_with_group_no
+
 
 
 
