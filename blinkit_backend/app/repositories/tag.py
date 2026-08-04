@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-
+from app.models.section_tag import SectionTag
 from app.models.tag import Tag
 from app.schemas.tag import TagCreate, TagUpdate
 
@@ -143,3 +143,30 @@ def delete_tag(
     return {
         "message": "Tag deleted successfully."
     }
+
+
+
+def check_all_tag_valid_by_id(db: Session, tag_ids: set[UUID]):
+    db_tags=db.query(Tag.id).filter(Tag.id.in_(tag_ids)).all()
+    if len(db_tags) != len(tag_ids):
+        missing_ids=tag_ids-db_tags
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="some of the tags are not found.",
+            missing_ids=f"tags not found, {missing_ids}."
+        )
+    return db_tags
+
+
+def get_tag_by_section(db: Session, section_id: UUID):
+    tags=db.query(SectionTag).filter(SectionTag.section_id==section_id).order_by(SectionTag.group_no.asc()).all()
+    if tags is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="the section does not have any tags.",
+        )
+    return tags
+
+
+
+

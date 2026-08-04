@@ -1,12 +1,14 @@
 from uuid import UUID
 
 from pydantic import BaseModel, Field
-
+from typing import Optional
 
 class SectionCreate(BaseModel):
-    title: str = Field(..., min_length=2)
+    title: str = Field(..., min_length=5)
     display_order: int = 0
     collection_id: UUID
+    is_active: bool 
+
 
 
 class SectionUpdate(BaseModel):

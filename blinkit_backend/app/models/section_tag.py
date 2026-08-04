@@ -15,38 +15,21 @@ from app.db.database import Base
 class SectionTag(Base):
     __tablename__ = "section_tags"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-    )
-
-    section_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("sections.id"),
-        nullable=False,
-    )
-
-    tag_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("tags.id"),
-        nullable=False,
-    )
-
-    group_no = Column(
-        Integer,
-        nullable=False,
-        default=1
-    )
+    id = Column(UUID(as_uuid=True),primary_key=True,default=uuid.uuid4)
+    section_id = Column(UUID(as_uuid=True),ForeignKey("sections.id"),nullable=False)
+    tag_id = Column(UUID(as_uuid=True),ForeignKey("tags.id"),nullable=False)
+    group_no = Column(Integer,nullable=False,default=1)
+    
+    #relationship
 
     section = relationship(
         "Section",
-        back_populates="tags",
+        back_populates="section_tags",
     )
 
     tag = relationship(
         "Tag",
-        back_populates="sections",
+        back_populates="section_tags",
     )
 
 

@@ -26,3 +26,13 @@ class TagResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+
+
+class SectionTagMapping(BaseModel):
+    tag_id: set[UUID] = Field(...,min_length=1)
+
+
+
+class SectionTagMappingRequest(BaseModel):
+    tags: list[SectionTagMapping] 
