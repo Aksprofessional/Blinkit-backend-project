@@ -4,6 +4,8 @@ from app.repositories.collection import get_collection_user
 from app.repositories.category import get_all_categories_user
 from app.schemas.category import CategoryListResponse,CategoryResponse,SubCategoryResponse
 
+from app.exceptions.custom_exception import NotFoundException
+
 
 
 # Retrieve categories, optionally filtered by a collection
@@ -45,9 +47,8 @@ def get_categories_service(
 
     # Raise an exception if the collection does not exist
     if collection_obj is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Collection not found.",
+        raise NotFoundException(
+            "Collection not found"
         )
 
     # Store categories while grouping their subcategories

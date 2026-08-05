@@ -19,6 +19,8 @@ from jose import JWTError, jwt
 
 from app.utils.email import send_verification_email
 
+from exceptions.custom_exception import UnauthorizedException, BadRequestException, NotFoundException
+
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
@@ -39,9 +41,8 @@ async def register(
     ).first()
 
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered",
+        raise BadRequestException(
+        "Email already registered"
         )
 
     hashed_password = hash_password(
@@ -90,10 +91,7 @@ def login(
 
     # if User not found
     if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
-        )
+        raise UnauthorizedException()
 
     # check account status
     if db_user.isdeleted:
@@ -152,11 +150,6 @@ def refresh_access_token(
     token_data: RefreshTokenRequest,
     db: Session = Depends(get_db),
 ):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid refresh token",
-    )
-
     try:
         payload = jwt.decode(
             token_data.refresh_token,
@@ -165,15 +158,15 @@ def refresh_access_token(
         )
 
         if payload.get("type") != "refresh":
-            raise credentials_exception
+            raise UnauthorizedException()
 
         user_id = payload.get("sub")
 
         if user_id is None:
-            raise credentials_exception
+            raise UnauthorizedException()
 
     except JWTError:
-        raise credentials_exception
+        raise UnauthorizedException()
 
     user = db.get(
         User,
@@ -185,7 +178,7 @@ def refresh_access_token(
         or user.isdeleted
         or not user.is_active
     ):
-        raise credentials_exception
+        raise UnauthorizedException()
 
     access_token = create_access_token(
         str(user.id),
@@ -233,9 +226,8 @@ def verify_email(
     ).first()
 
     if not user:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found.",
+        raise NotFoundException(
+            "User not found."
         )
 
     user.is_verified = True

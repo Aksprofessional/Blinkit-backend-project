@@ -6,6 +6,8 @@ from app.dependencies.permissions import require_admin
 from app.models.user import User
 from app.schemas.category import CategoryCreate,CategoryUpdate
 from uuid import UUID
+
+from app.exceptions.custom_exception import ConflictException
 from app.repositories.category import (
     add_category,
     get_category_by_name,
@@ -37,9 +39,8 @@ def create_category(
     )
 
     if existing_category:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Category already exists",
+        raise ConflictException(
+            "Category already exists"
         )
 
     new_category = add_category(

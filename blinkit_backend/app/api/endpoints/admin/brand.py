@@ -11,6 +11,8 @@ from app.models.user import User
 
 from app.schemas.brand import BrandCreate,BrandUpdate,add_brand_pydantic,update_brand_pydantic
 
+from app.exceptions.custom_exception import ConflictException
+
 from app.repositories.brand import (
     create_brand,
     get_all_brands,
@@ -45,9 +47,8 @@ def add_brand(
     )
 
     if existing_brand:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Brand already exists"
+        raise ConflictException(
+            "Brand already exists"
         )
     
     return create_brand(

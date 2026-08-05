@@ -9,13 +9,14 @@ from app.models.collection import Collection
 from app.models.sub_category import SubCategory
 from app.models.main_category import MainCategory
 
+from app.exceptions.custom_exception import NotFoundException, InternalServerException
+
 
 def get_category_by_id(db: Session, category_id: UUID):
     category=db.get(Category,category_id)
     if category is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
+        raise NotFoundException(
+            "Category not found"
         )
     return category
 
@@ -33,9 +34,8 @@ def add_category(
         )
 
         if db_main_category is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Main category not found",
+            raise NotFoundException(
+                "Main Category not found"
             )
 
         db_category = Category(
@@ -53,9 +53,8 @@ def add_category(
 
     except Exception:
         db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail="Failed to create category."
+        raise InternalServerException(
+            "Failed to create category"
         )
 
 

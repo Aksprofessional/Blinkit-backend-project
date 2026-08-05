@@ -5,6 +5,7 @@ from typing import Optional
 from app.schemas.collection import CollectionCreate, CollectionUpdate
 from app.models.collection import Collection
 from app.models.sub_category import SubCategory
+from app.exceptions.custom_exception import NotFoundException
 
 
 def get_collection_by_id(
@@ -17,9 +18,8 @@ def get_collection_by_id(
     )
 
     if db_collection is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Collection not found",
+        raise NotFoundException(
+            "Collection not found"
         )
 
     return db_collection

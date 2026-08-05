@@ -49,10 +49,9 @@ def add_product(db: Session, current_user: User, product_variant_id: UUID):
     if not created:
         cartitem=cart_item.get_product_from_cart(db,user_cart.id,product_variant_id)
         if cartitem:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail='product already exists in cart.'
-            )
+            raise ConflictException(
+                        "Product already exists"
+                    )
 
     # Add the product to the cart
     cartitem=cart_item.add_product_cart_item(db,product_variant_id,user_cart.id)

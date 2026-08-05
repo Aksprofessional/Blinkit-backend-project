@@ -10,7 +10,7 @@ from app.schemas.main_category import (
     MainCategoryCreate,
     MainCategoryUpdate,
 )
-
+from app.exceptions.custom_exception import NotFoundException
 
 def get_main_category_by_id(
     db: Session,
@@ -22,10 +22,9 @@ def get_main_category_by_id(
     )
 
     if db_main_category is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Main category not found",
-        )
+        raise NotFoundException(
+                    "Main Category not found"
+                )
 
     return db_main_category
 
@@ -82,10 +81,9 @@ def create_main_category(
     )
 
     if not collection:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Collection not found"
-        )
+        raise NotFoundException(
+                    "Collection not found"
+                )
 
 
     db_main_category = MainCategory(

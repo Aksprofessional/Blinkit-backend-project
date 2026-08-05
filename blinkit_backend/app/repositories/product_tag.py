@@ -8,6 +8,8 @@ from app.models.products import Products
 from app.models.tag import Tag
 from app.schemas.product_tag import ProductTagCreate
 
+from app.exceptions.custom_exception import NotFoundException
+
 
 def add_product_tag(
     db: Session,
@@ -19,10 +21,9 @@ def add_product_tag(
     )
 
     if product is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found",
-        )
+        raise NotFoundException(
+                    "Product not found"
+                )
 
     tag = db.get(
         Tag,
@@ -30,10 +31,9 @@ def add_product_tag(
     )
 
     if tag is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Tag not found",
-        )
+        raise NotFoundException(
+                    "Tag not found"
+                )
 
     existing = db.query(ProductTag).filter(
         ProductTag.product_id == product_tag.product_id,
@@ -73,10 +73,9 @@ def delete_product_tag(
     )
 
     if db_mapping is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Mapping not found",
-        )
+        raise NotFoundException(
+                    "Mapping not found"
+                )
 
     db.delete(db_mapping)
     db.commit()

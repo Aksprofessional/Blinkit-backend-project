@@ -5,6 +5,8 @@ from typing import Optional
 from app.models.sub_category import SubCategory
 from app.schemas.sub_category import SubCategoryCreate,SubCategoryUpdate
 
+from app.exceptions.custom_exception import NotFoundException, ConflictException
+
 
 
 def create_subcategory(
@@ -17,10 +19,9 @@ def create_subcategory(
     ).first()
 
     if existing:
-        raise HTTPException(
-            status_code=400,
-            detail="SubCategory already exists"
-        )
+        raise ConflictException(
+                    "Sub Category already exists"
+                )
 
     #unpacking so we could subcategory.name and all
     subcategory = SubCategory(
@@ -78,10 +79,9 @@ def get_subcategory_by_id(
     )
 
     if subcategory is None:
-        raise HTTPException(
-            status_code=404,
-            detail="SubCategory not found"
-        )
+        raise NotFoundException(
+                    "Subcategory not found"
+                )
 
     return subcategory
 

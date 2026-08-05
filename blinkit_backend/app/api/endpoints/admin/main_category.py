@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 
+from app.exceptions.custom_exception import ConflictException
+
 from app.dependencies.auth import get_current_user
 from app.dependencies.permissions import require_admin
 
@@ -52,10 +54,9 @@ def add_main_category(
     )
 
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Main category already exists",
-        )
+        raise ConflictException(
+                    "Main Category already exists"
+                )
 
     return create_main_category(
         db,

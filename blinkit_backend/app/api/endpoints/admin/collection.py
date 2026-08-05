@@ -9,6 +9,8 @@ from app.dependencies.auth import get_current_user
 
 from app.models.user import User
 
+from app.exceptions.custom_exception import ConflictException
+
 from app.schemas.collection import (
     CollectionCreate,
     CollectionUpdate
@@ -47,10 +49,9 @@ def add_collection(
     )
 
     if existing_collection:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Collection already exists",
-        )
+        raise ConflictException(
+                    "Category already exists"
+                )
 
     return create_collection(
         db,

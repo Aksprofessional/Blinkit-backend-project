@@ -12,6 +12,8 @@ from app.schemas.section import (
 )
 from app.models.section_tag import SectionTag
 
+from app.exceptions.custom_exception import NotFoundException
+
 
 def get_section_by_id(
     db: Session,
@@ -23,10 +25,9 @@ def get_section_by_id(
     )
 
     if db_section is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Section not found",
-        )
+        raise NotFoundException(
+                    "Section not found"
+                )
 
     return db_section
 
@@ -80,10 +81,9 @@ def create_section(
     )
 
     if collection is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Collection not found",
-        )
+        raise NotFoundException(
+                    "Collection not found"
+                )
 
     db_section = Section(
         **section_data.model_dump()

@@ -5,15 +5,15 @@ from app.models.brand import brand
 from app.schemas.brand import BrandCreate, BrandUpdate
 from typing import Optional
 from app.services.image_sevice import upload_image,destroy_image
+from app.exceptions.custom_exception import NotFoundException
 
 
 def get_brand_by_id(db: Session, brand_id: UUID):
     db_brand = db.get(brand, brand_id)
 
     if db_brand is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Brand not found"
+        raise NotFoundException(
+            "Brand not found"
         )
 
     return db_brand

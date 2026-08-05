@@ -10,6 +10,10 @@ from app.models.tag import Tag
 from app.schemas.products import ProductCreate, ProductUpdate
 from app.services.image_sevice import upload_image,destroy_image
 
+from app.exceptions.custom_exception import ConflictException
+
+from app.exceptions.custom_exception import NotFoundException
+
 
 
 def create_product(db: Session, product_data: ProductCreate, image: UploadFile):
@@ -19,10 +23,9 @@ def create_product(db: Session, product_data: ProductCreate, image: UploadFile):
     ).first()
 
     if existing_product:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Product already exists"
-        )
+        raise ConflictException(
+                    "Product already exists"
+                )
 
     image_url=upload_image(image,Products.__tablename__)
 
@@ -86,10 +89,9 @@ def get_product_by_id(
 )
 
     if product is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Product not found"
-        )
+        raise NotFoundException(
+                    "Product not found"
+                )
 
     return product
 

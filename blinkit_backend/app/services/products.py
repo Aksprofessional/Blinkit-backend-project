@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from app.repositories.product import get_product_by_id
 from app.schemas.product_variant import ProductDetailResponse,ProductVariantResponse
 
+from app.exceptions.custom_exception import NotFoundException
 
 
 
@@ -19,9 +20,8 @@ def check_product_variant_exist(db: Session, product_variant_id: UUID):
 
     # Raise an exception if the product variant does not exist
     if product_variant is None:
-        raise HTTPException(
-                     status_code=status.HTTP_404_NOT_FOUND,
-                     detail="product not found"
+        raise NotFoundException(
+                    "Product not found"
                 )
     return product_variant
 
@@ -97,10 +97,9 @@ def get_product_by_id_service(
 
     # Raise an exception if the product does not exist
     if product is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Product not found.",
-        )
+        raise NotFoundException(
+                    "Product not found"
+                )
 
     # Include only active product variants
     variants = [

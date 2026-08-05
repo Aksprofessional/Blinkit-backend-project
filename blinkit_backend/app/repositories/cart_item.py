@@ -6,6 +6,8 @@ from app.models.cart import Cart
 from app.models.product_variant import product_variant
 from app.models.products import Products
 
+from app.exceptions.custom_exception import NotFoundException
+
 def add_product_cart_item(db: Session, productvariantid: UUID, cartid: UUID, quantity: int = 1):
 
     cart_item=CartItem(product_variant_id=productvariantid, cart_id=cartid, quantity=quantity)
@@ -83,10 +85,9 @@ def get_cart_item_by_cart_item_id(db: Session, current_user_id: UUID, cart_item_
     )
 
     if not cart_item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Cart item not found."
-        )
+        raise NotFoundException(
+                "Cart Item not found"
+            )
     db.delete(cart_item)
     return cart_item
 
@@ -103,8 +104,7 @@ def get_cart_item_by_product_variant_id(db: Session, current_user_id: UUID, prod
     )
 
     if not cart_item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Cart item not found."
+        raise NotFoundException(
+            "Product not found"
         )
     return cart_item

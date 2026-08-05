@@ -2,6 +2,7 @@ from fastapi import HTTPException,status
 from sqlalchemy.orm import Session
 from uuid import UUID
 from app.models.cart import Cart
+from app.exceptions.custom_exception import InternalServerException
 
 
 def get_cart_by_user_id(db: Session,user_id: UUID):
@@ -17,9 +18,8 @@ def create_cart(db: Session, userid: UUID):
         return user_cart
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="could not create a cart due to database error"
+        raise InternalServerException(
+            "Failed to create category"
         )
 
 

@@ -9,6 +9,8 @@ from sqlalchemy import or_
 
 from app.models.user import User
 
+from app.exceptions.custom_exception import NotFoundException
+
 #db query to get users
 def get_all_users(
     db: Session,
@@ -51,10 +53,9 @@ def get_user_by_id(
     user = db.get(User, user_id)
 
     if user is None:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found"
-        )
+        raise NotFoundException(
+                    "User not found"
+                )
 
     return user
 

@@ -7,6 +7,8 @@ from app.models.section_tag import SectionTag
 from app.models.tag import Tag
 from app.schemas.tag import TagCreate, TagUpdate
 
+from app.exceptions.custom_exception import NotFoundException
+
 
 def get_tag_by_id(
     db: Session,
@@ -15,9 +17,8 @@ def get_tag_by_id(
     db_tag = db.get(Tag, tag_id)
 
     if db_tag is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Tag not found",
+        raise NotFoundException(
+            "Product not found"
         )
 
     return db_tag
@@ -72,10 +73,9 @@ def create_tag(
     )
 
     if existing:
-        raise HTTPException(
-            status_code=400,
-            detail="Tag already exists.",
-        )
+        raise ConflictException(
+                    "Tag already exists"
+                )
 
     db_tag = Tag(
         **tag_data.model_dump()
@@ -114,10 +114,9 @@ def update_tag(
         )
 
         if existing:
-            raise HTTPException(
-                status_code=400,
-                detail="Tag already exists.",
-            )
+            raise ConflictException(
+                        "Tag already exists"
+                    )
 
     for key, value in update_data.items():
         setattr(

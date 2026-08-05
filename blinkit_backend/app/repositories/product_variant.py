@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 from typing import Optional
 from app.schemas.product_variant import ProductVariantCreate,ProductVariantUpdate
 
+from app.exceptions.custom_exception import NotFoundException
+
 
 def get_product_variant(db: Session, product_variant_id: UUID):
     product=db.query(product_variant).join(Products).filter(product_variant.id==product_variant_id,product_variant.isdeleted==False,Products.isdeleted==False).first()
@@ -46,10 +48,9 @@ def get_product_variant_by_id(
     )
 
     if not variant or variant.isdeleted:
-        raise HTTPException(
-            status_code=404,
-            detail="Variant not found"
-        )
+        raise NotFoundException(
+                    "Variant not found"
+                )
 
     return variant
 

@@ -4,6 +4,8 @@ from fastapi import HTTPException, status
 from uuid import UUID
 from app.schemas.delivery_address import AddAddress
 
+from app.exceptions.custom_exception import ConflictException
+
 def delivery_address_exists(db: Session, address: AddAddress,current_user_id: UUID):
     addresses=db.query(delivery_address).filter(delivery_address.address==address.address,
                                                 delivery_address.user_id==current_user_id,
@@ -11,9 +13,8 @@ def delivery_address_exists(db: Session, address: AddAddress,current_user_id: UU
                                                 delivery_address.state==address.state,
                                                 delivery_address.pincode==address.pincode,).first()
     if addresses:
-        raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail='address already exists'
+        raise ConflictException(
+                    "Address already exists"
                 )
     return 
 
