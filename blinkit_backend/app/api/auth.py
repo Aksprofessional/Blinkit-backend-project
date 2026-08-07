@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -19,7 +19,9 @@ from jose import JWTError, jwt
 
 from app.utils.email import send_verification_email
 
-from exceptions.custom_exception import UnauthorizedException, BadRequestException, NotFoundException
+from app.exceptions.custom_exception import UnauthorizedException, BadRequestException, NotFoundException, InternalServerException, ForbiddenException
+
+from app.core.logger import logger
 
 router = APIRouter(
     prefix="/auth",
@@ -42,7 +44,7 @@ async def register(
 
     if existing_user:
         raise BadRequestException(
-        "Email already registered"
+            "Email already registered"
         )
 
     hashed_password = hash_password(
@@ -56,18 +58,43 @@ async def register(
         role=User_role.CUSTOMER,
     )
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    try:
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
 
+    except Exception:
+        db.rollback()
+
+        logger.exception(
+            "Database error while registering user."
+        )
+
+        raise InternalServerException(
+            "Database error while registering user."
+        )
+
+    # Generate an email verification token after successful registration.
     token = create_email_verification_token(
-        new_user.mail,
-    )
+                new_user.mail,
+            )
 
-    await send_verification_email(
-        new_user.mail,
-        token,
-    )
+    # Send verification email to activate the account.
+    # in another try block as say db succeeds, email not sent 
+    try:
+        await send_verification_email(
+            new_user.mail,
+            token,
+        )
+
+    except Exception:
+        logger.exception(
+            "Failed to send verification email."
+        )
+
+        raise InternalServerException(
+            "Failed to send verification email."
+        )
 
     return {
         "message": "Registration successful. Please verify your email before logging in.",
@@ -95,21 +122,18 @@ def login(
 
     # check account status
     if db_user.isdeleted:
-        raise HTTPException(
-            status_code=403,
-            detail="This account has been deleted."
+        raise ForbiddenException(
+            "This account has been deleted."
         )
 
     if not db_user.is_verified:
-        raise HTTPException(
-            status_code=403,
-            detail="Please verify your email before logging in."
+        raise ForbiddenException(
+            "Please verify your email before logging in."
         )
 
     if not db_user.is_active:
-        raise HTTPException(
-            status_code=403,
-            detail="This account has been disabled by admin."
+        raise ForbiddenException(
+            "This account has been disabled by admin."
         )
 
     # Verify password
@@ -117,9 +141,8 @@ def login(
         user.password,
         db_user.hashed_password
     ):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+        raise UnauthorizedException(
+            "Invalid email or password"
         )
 
     # Create JWT
@@ -208,17 +231,15 @@ def verify_email(
         )
 
         if payload.get("type") != "verify":
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid token",
+            raise BadRequestException(
+                "Invalid token."
             )
 
         email = payload.get("sub")
 
     except JWTError:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid or expired token.",
+        raise BadRequestException(
+            "Invalid token."
         )
 
     user = db.query(User).filter(
@@ -232,8 +253,16 @@ def verify_email(
 
     user.is_verified = True
 
-    db.commit()
+    try:
+        db.commit()
 
-    return {
-        "message": "Email verified successfully."
-    }
+    except Exception:
+        db.rollback()
+
+        logger.exception(
+            "Failed to verify email."
+        )
+
+        raise InternalServerException(
+            "Failed to verify email."
+        )

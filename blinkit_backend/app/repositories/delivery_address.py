@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from uuid import UUID
 from app.schemas.delivery_address import AddAddress
 
-from app.exceptions.custom_exception import ConflictException
+from app.exceptions.custom_exception import ConflictException, NotFoundException
 
 def delivery_address_exists(db: Session, address: AddAddress,current_user_id: UUID):
     addresses=db.query(delivery_address).filter(delivery_address.address==address.address,
@@ -51,9 +51,8 @@ def get_address_all(db: Session,current_user_id: UUID):
 def get_address_by_id(db: Session,address_id: UUID,current_user_id: UUID):
     address=db.query(delivery_address).filter(delivery_address.id==address_id,delivery_address.user_id==current_user_id).first()
     if address is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='address id with the current user does not exist.'
+        raise NotFoundException(
+            "Address not found."
         )
     return address
 
@@ -64,9 +63,8 @@ def check_address_first_by_user(db: Session,current_user_id: UUID):
 def get_current_default_address_user(db: Session,current_user_id: UUID):
     user_address=db.query(delivery_address).filter(delivery_address.user_id==current_user_id,delivery_address.is_default==True).first()
     if user_address is None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail='user has no default as address.please contact admin.'
+        raise ConflictException(
+            "user has no default as address.please contact admin."
         )
     return user_address
 
@@ -90,9 +88,8 @@ def delivery_address_exists_model_address(db: Session, address: delivery_address
                                                 delivery_address.id != address.id).first()
     
     if addresses:
-        raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail='address already exists with the same information.cannot be updated.'
+        raise ConflictException(
+                    "address already exists with the same information.cannot be updated."
                 )
     return 
 

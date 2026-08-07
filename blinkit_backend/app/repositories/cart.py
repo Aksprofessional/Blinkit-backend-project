@@ -16,10 +16,10 @@ def create_cart(db: Session, userid: UUID):
         db.add(user_cart)
         db.flush()
         return user_cart
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise InternalServerException(
-            "Failed to create category"
+            "Failed to create cart"
         )
 
 

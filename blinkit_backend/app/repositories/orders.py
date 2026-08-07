@@ -10,6 +10,8 @@ from app.models.product_variant import product_variant
 from decimal import Decimal
 from datetime import datetime
 
+from app.exceptions.custom_exception import NotFoundException
+
 def order_create(db: Session,delivery_address:delivery_address, current_user_id: UUID,total_amount: Decimal):
     user_order=Order(
         user_id=current_user_id,
@@ -31,9 +33,8 @@ def order_create(db: Session,delivery_address:delivery_address, current_user_id:
 def get_order(db: Session, current_user_id: UUID, order_id: UUID):
     user_order=db.query(Order).options(joinedload(Order.order_item).joinedload(order_items.product_variants).joinedload(product_variant.product)).filter(Order.id==order_id, Order.user_id==current_user_id).first()
     if user_order is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='user does not have a order with the current order id.'
+        raise NotFoundException(
+            "Order not found."
         )
     return user_order
 
@@ -61,8 +62,7 @@ def get_all_order_pagination(limit: int, db: Session, current_user_id: UUID, cur
 def get_order_by_id(db: Session, current_user_id: UUID, order_id: UUID):
     user_order=db.query(Order).filter(Order.user_id==current_user_id,Order.id == order_id).first()
     if user_order is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='user does not have a order with the current order id.'
+        raise NotFoundException(
+            "Order not found."
         )
     return user_order

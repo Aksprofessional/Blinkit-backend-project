@@ -10,7 +10,7 @@ from app.schemas.main_category import (
     MainCategoryCreate,
     MainCategoryUpdate,
 )
-from app.exceptions.custom_exception import NotFoundException
+from app.exceptions.custom_exception import NotFoundException, InternalServerException, BadRequestException
 
 def get_main_category_by_id(
     db: Session,
@@ -91,9 +91,24 @@ def create_main_category(
     )
 
 
-    db.add(db_main_category)
-    db.commit()
-    db.refresh(db_main_category)
+    try:
+
+        db.add(...)
+
+        db.commit()
+
+        db.refresh(...)
+
+    except HTTPException:
+        raise
+
+    except Exception:
+
+        db.rollback()
+
+        raise InternalServerException(
+            "Failed to create main category."
+        )
 
     return db_main_category
 
@@ -109,9 +124,8 @@ def update_main_category(
     )
 
     if not update_data:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No fields provided for update.",
+        raise BadRequestException(
+            "No fields provided for update."
         )
 
     for key, value in update_data.items():

@@ -24,7 +24,11 @@ class Products(Base):
 
 
 
-
+    sub_category_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("subcategory.id"),
+        nullable=False,
+    )
     #relationship
     sub_categories= relationship(
         'SubCategory',

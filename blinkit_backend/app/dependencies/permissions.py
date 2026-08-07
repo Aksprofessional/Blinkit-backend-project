@@ -11,7 +11,7 @@ def require_admin(
 ):
     if current_user.role != User_role.ADMIN:
         raise ForbiddenException(
-        "Only admins can perform this action"
+            "Only admins can perform this action"
         )
 
     return current_user

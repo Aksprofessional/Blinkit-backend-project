@@ -5,8 +5,9 @@ from app.models.brand import brand
 from app.schemas.brand import BrandCreate, BrandUpdate
 from typing import Optional
 from app.services.image_sevice import upload_image,destroy_image
-from app.exceptions.custom_exception import NotFoundException
+from app.exceptions.custom_exception import NotFoundException, InternalServerException, BadRequestException
 
+from app.core.logger import logger
 
 def get_brand_by_id(db: Session, brand_id: UUID):
     db_brand = db.get(brand, brand_id)
@@ -72,9 +73,21 @@ def create_brand(
     image_url=upload_image(logo,brand.__tablename__)
     db_brand.logo=image_url.get("url")
     db_brand.image_public_id=image_url.get("public_id")
-    db.add(db_brand)
-    db.commit()
-    db.refresh(db_brand)
+    try:
+        db.add(db_brand)
+        db.commit()
+        db.refresh(db_brand)
+
+    except Exception:
+        db.rollback()
+
+        logger.exception(
+            "Database error while creating brand"
+        )
+
+        raise InternalServerException(
+            "Failed to create brand."
+        )
 
     return db_brand
 
@@ -91,9 +104,8 @@ def update_brand(
     )
 
     if not update_data:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No fields provided for update."
+        raise BadRequestException(
+            "No fields provided for update."
         )
 
     for key, value in update_data.items():
@@ -102,20 +114,41 @@ def update_brand(
             key,
             value
         )
-    if logo is not None:
-        image_url=upload_image(logo,brand.__tablename__)
-        db_brand.logo=image_url.get("url")
-        public_id_old=db_brand.image_public_id
-        db_brand.image_public_id=image_url.get("public_id")
-        db.commit()
-        db.refresh(db_brand)
-        destroy_image(public_id_old)
-    else:
-        db.commit()
-        db.refresh(db_brand)
 
+    try:
+        if logo is not None:
 
-    
+            image_url = upload_image(...)
+
+            db_brand.logo = image_url["url"]
+
+            public_id_old = db_brand.image_public_id
+
+            db_brand.image_public_id = image_url["public_id"]
+
+            db.commit()
+
+            db.refresh(db_brand)
+
+            destroy_image(public_id_old)
+
+        else:
+
+            db.commit()
+
+            db.refresh(db_brand)
+
+    except Exception:
+
+        db.rollback()
+
+        logger.exception(
+            "Database error while updating brand."
+        )
+
+        raise InternalServerException(
+            "Failed to update brand."
+        )
 
     return db_brand
 
@@ -126,8 +159,22 @@ def delete_brand(
 ):
     db_brand.is_active = False
 
-    db.commit()
+    try:
+
+        db.commit()
+
+    except Exception:
+
+        db.rollback()
+
+        logger.exception(
+            "Database error while deleting brand."
+        )
+
+        raise InternalServerException(
+            "Failed to delete brand."
+        )
 
     return {
-        "message": "Brand deleted successfully."
+        "message":"Brand deleted successfully."
     }

@@ -105,8 +105,15 @@ def update_category(
     db: Session,
     category: Category,
 ):
-    db.commit()
-    db.refresh(category)
+    try:
+        db.commit()
+        db.refresh(category)
+    except Exception:
+        db.rollback()
+
+        raise InternalServerException(
+            "Failed to update category."
+        )
     return category
 
 
@@ -116,8 +123,15 @@ def delete_category(
     category: Category,
 ):
     category.is_active = False
-    db.commit()
-    db.refresh(category)
+    try:
+        db.commit()
+        db.refresh(category)
+    except Exception:
+        db.rollback()
+
+        raise InternalServerException(
+            "Failed to delete category."
+        )
     return category
 
 

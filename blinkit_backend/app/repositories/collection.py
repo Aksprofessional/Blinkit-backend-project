@@ -5,7 +5,7 @@ from typing import Optional
 from app.schemas.collection import CollectionCreate, CollectionUpdate
 from app.models.collection import Collection
 from app.models.sub_category import SubCategory
-from app.exceptions.custom_exception import NotFoundException
+from app.exceptions.custom_exception import NotFoundException, BadRequestException, InternalServerException
 
 
 def get_collection_by_id(
@@ -79,9 +79,16 @@ def create_collection(
         **collection_data.model_dump()
     )
 
-    db.add(db_collection)
-    db.commit()
-    db.refresh(db_collection)
+    try:
+        db.add(db_collection)
+        db.commit()
+        db.refresh(db_collection)
+
+    except Exception:
+        db.rollback()
+        raise InternalServerException(
+            "Failed to create collection."
+        )
 
     return db_collection
 
@@ -96,11 +103,9 @@ def update_collection(
     )
 
     if not update_data:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No fields provided for update.",
+        raise BadRequestException(
+            "No fields provided for update."
         )
-
     for key, value in update_data.items():
         setattr(
             db_collection,
@@ -108,8 +113,15 @@ def update_collection(
             value,
         )
 
-    db.commit()
-    db.refresh(db_collection)
+    try:
+        db.commit()
+        db.refresh(db_collection)
+
+    except Exception:
+        db.rollback()
+        raise InternalServerException(
+            "Failed to update collection."
+        )
 
     return db_collection
 
@@ -118,13 +130,16 @@ def delete_collection(
     db: Session,
     db_collection: Collection,
 ):
-    db_collection.is_active = False
+    db_collection.is_active=False
 
-    db.commit()
+    try:
+        db.commit()
 
-    return {
-        "message": "Collection deleted successfully."
-    }
+    except Exception:
+        db.rollback()
+        raise InternalServerException(
+            "Failed to delete collection."
+        )
 
 
 
