@@ -8,8 +8,9 @@ from app.models.products import Products
 from app.models.tag import Tag
 from app.schemas.product_tag import ProductTagCreate
 
-from app.exceptions.custom_exception import NotFoundException
+from app.exceptions.custom_exception import NotFoundException, InternalServerException
 
+from app.core.logger import logger
 
 def add_product_tag(
     db: Session,
@@ -50,9 +51,17 @@ def add_product_tag(
         **product_tag.model_dump()
     )
 
-    db.add(db_product_tag)
-    db.commit()
-    db.refresh(db_product_tag)
+    try:
+        db.add(db_product_tag)
+        db.commit()
+        db.refresh(db_product_tag)
+
+    except Exception:
+        db.rollback()
+
+        raise InternalServerException(
+            "Failed to create product tag."
+        )
 
     return db_product_tag
 
@@ -78,8 +87,17 @@ def delete_product_tag(
                 )
 
     db.delete(db_mapping)
-    db.commit()
+
+    try:
+        db.commit()
+
+    except Exception:
+        db.rollback()
+
+        raise InternalServerException(
+            "Failed to delete product tag."
+        )
 
     return {
-        "message": "Product tag removed successfully."
+        "message": "Product tag deleted successfully."
     }

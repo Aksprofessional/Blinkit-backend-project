@@ -19,7 +19,7 @@ from fastapi import FastAPI
 
 
 
-from app.api.auth import router as auth_router
+from app.api.endpoints.auth import router as auth_router
 from app.api.endpoints.admin.category import (
     router as admin_category_router,
 )
@@ -36,8 +36,12 @@ from app.api.endpoints.admin.main_category import router as main_category_router
 
 from app.api.endpoints.admin.product_tag import router as product_tag_router
 
+from app.middleware.logging import logging_middleware
 
 app = FastAPI(title="Blinkit Backend API")
+
+#register logging middleware
+app.middleware("http")(logging_middleware)
 
 app.include_router(auth_router)
 app.include_router(cart_item.router, prefix='/api/cart-items',tags=["Customer cart item"])

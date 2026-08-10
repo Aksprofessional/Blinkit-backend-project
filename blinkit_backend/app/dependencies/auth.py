@@ -9,6 +9,8 @@ from app.core.config import Setting
 from app.db.database import get_db
 from app.models.user import User
 
+from app.exceptions.custom_exception import UnauthorizedException
+
 #its just extracting token 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/auth/login"    #swagger knows to get a token call this
@@ -19,11 +21,6 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),       #dependency injection that ,,fastapi looks at incoming request extract token from it.
     db: Session = Depends(get_db),
 ):
-    print("TOKEN:", token)
-    credentials_exception = HTTPException(     
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-    )
 
     #decoding the token
     try:
@@ -36,18 +33,26 @@ def get_current_user(
         user_id = payload.get("sub")
 
         if payload.get("type") != "access":
-            raise credentials_exception
+            raise UnauthorizedException(
+                    "Could not validate credentials"
+                )
 
         if user_id is None:
-            raise credentials_exception
+            raise UnauthorizedException(
+                    "Could not validate credentials"
+                )
 
     except JWTError:
-        raise credentials_exception
+        raise UnauthorizedException(
+                "Could not validate credentials"
+            )
 
     user = db.get(User, UUID(user_id))
 
     if user is None or user.isdeleted:
-        raise credentials_exception
+        raise UnauthorizedException(
+                "Could not validate credentials"
+            )
     
 
     return user

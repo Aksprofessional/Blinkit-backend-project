@@ -7,6 +7,8 @@ from app.models.collection import Collection
 from app.models.sub_category import SubCategory
 from app.exceptions.custom_exception import NotFoundException, BadRequestException, InternalServerException
 
+from app.core.logger import logger
+
 
 def get_collection_by_id(
     db: Session,
@@ -81,11 +83,15 @@ def create_collection(
 
     try:
         db.add(db_collection)
+        # Temporary only for testing
+        raise Exception("Testing formatted logging")
+    
         db.commit()
         db.refresh(db_collection)
 
     except Exception:
         db.rollback()
+
         raise InternalServerException(
             "Failed to create collection."
         )
@@ -119,6 +125,7 @@ def update_collection(
 
     except Exception:
         db.rollback()
+        
         raise InternalServerException(
             "Failed to update collection."
         )
@@ -137,9 +144,13 @@ def delete_collection(
 
     except Exception:
         db.rollback()
+
         raise InternalServerException(
             "Failed to delete collection."
         )
+    return {
+        "message": "Collection deleted."
+    }
 
 
 

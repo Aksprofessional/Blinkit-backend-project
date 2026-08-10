@@ -7,7 +7,7 @@ from app.models.section_tag import SectionTag
 from app.models.tag import Tag
 from app.schemas.tag import TagCreate, TagUpdate
 
-from app.exceptions.custom_exception import NotFoundException
+from app.exceptions.custom_exception import NotFoundException, ConflictException, BadRequestException
 
 
 def get_tag_by_id(
@@ -18,7 +18,7 @@ def get_tag_by_id(
 
     if db_tag is None:
         raise NotFoundException(
-            "Product not found"
+            "Tag not found"
         )
 
     return db_tag
@@ -99,9 +99,8 @@ def update_tag(
     )
 
     if not update_data:
-        raise HTTPException(
-            status_code=400,
-            detail="No fields provided.",
+        raise BadRequestException(
+            "No fields provided"
         )
 
     if (

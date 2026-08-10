@@ -81,10 +81,6 @@ def create_brand(
     except Exception:
         db.rollback()
 
-        logger.exception(
-            "Database error while creating brand"
-        )
-
         raise InternalServerException(
             "Failed to create brand."
         )
@@ -103,7 +99,7 @@ def update_brand(
         exclude_none=True
     )
 
-    if not update_data:
+    if not update_data and logo is None:
         raise BadRequestException(
             "No fields provided for update."
         )
@@ -117,8 +113,11 @@ def update_brand(
 
     try:
         if logo is not None:
-
-            image_url = upload_image(...)
+            # Upload the new logo and update the stored image details.
+            image_url = upload_image(
+                logo,
+                brand.__tablename__,
+            )
 
             db_brand.logo = image_url["url"]
 
@@ -130,8 +129,12 @@ def update_brand(
 
             db.refresh(db_brand)
 
-            destroy_image(public_id_old)
-
+            try:
+                destroy_image(public_id_old)
+            except Exception:
+                logger.exception(
+                    "Failed to delete old brand image."
+                )
         else:
 
             db.commit()
@@ -141,10 +144,6 @@ def update_brand(
     except Exception:
 
         db.rollback()
-
-        logger.exception(
-            "Database error while updating brand."
-        )
 
         raise InternalServerException(
             "Failed to update brand."
@@ -164,12 +163,8 @@ def delete_brand(
         db.commit()
 
     except Exception:
-
+        # Roll back the transaction if database update fails.
         db.rollback()
-
-        logger.exception(
-            "Database error while deleting brand."
-        )
 
         raise InternalServerException(
             "Failed to delete brand."

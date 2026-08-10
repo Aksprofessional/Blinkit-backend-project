@@ -10,9 +10,9 @@ from app.models.tag import Tag
 from app.schemas.products import ProductCreate, ProductUpdate
 from app.services.image_sevice import upload_image,destroy_image
 
-from app.exceptions.custom_exception import ConflictException
+from app.exceptions.custom_exception import ConflictException, NotFoundException, InternalServerException, BadRequestException
 
-from app.exceptions.custom_exception import NotFoundException
+from app.core.logger import logger
 
 
 
@@ -26,25 +26,28 @@ def create_product(db: Session, product_data: ProductCreate, image: UploadFile):
         raise ConflictException(
                     "Product already exists"
                 )
+                
+    try:
+        image_url=upload_image(image,Products.__tablename__)
 
-    image_url=upload_image(image,Products.__tablename__)
+        product = Products(
+            name=product_data.name,
+            image= image_url.get("url"),
+            description= product_data.description,
+            brand_id= product_data.brand_id,
+            sub_category_id= product_data.sub_category_id,
+            image_public_id=image_url.get("public_id")
+        )
 
+        db.add(product)
+        db.flush()
 
-    
-    
+    except Exception:
+        db.rollback()
 
-    product = Products(
-        name=product_data.name,
-        image= image_url.get("url"),
-        description= product_data.description,
-        brand_id= product_data.brand_id,
-        sub_category_id= product_data.sub_category_id,
-        image_public_id=image_url.get("public_id")
-
-    )
-
-    db.add(product)
-    db.flush()
+        raise InternalServerException(
+            "Failed to create product."
+        )
 
     for tag_id in product_data.tag_ids:
 
@@ -54,9 +57,8 @@ def create_product(db: Session, product_data: ProductCreate, image: UploadFile):
         )
 
         if not tag:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Tag {tag_id} not found",
+            raise NotFoundException(
+                "Tag {tag_id} not found",
             )
 
         db.add(
@@ -178,9 +180,8 @@ def update_product(
             )
 
             if not tag:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Tag {tag_id} not found",
+                raise BadRequestException(
+                    "Tag {tag_id} not found",
                 )
 
             db.add(

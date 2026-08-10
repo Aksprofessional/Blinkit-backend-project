@@ -66,10 +66,6 @@ async def register(
     except Exception:
         db.rollback()
 
-        logger.exception(
-            "Database error while registering user."
-        )
-
         raise InternalServerException(
             "Database error while registering user."
         )
@@ -88,9 +84,6 @@ async def register(
         )
 
     except Exception:
-        logger.exception(
-            "Failed to send verification email."
-        )
 
         raise InternalServerException(
             "Failed to send verification email."
@@ -117,6 +110,7 @@ def login(
     ).first()
 
     # if User not found
+    # technically we're first checking whether the user exists. But I intentionally return the same Unauthorized response as invalid passwords to avoid user enumeration and not reveal whether an email exists.
     if not db_user:
         raise UnauthorizedException()
 
@@ -141,6 +135,7 @@ def login(
         user.password,
         db_user.hashed_password
     ):
+        #unauthorized because it prevents user enumeration (attackers can't tell whether an email exists)
         raise UnauthorizedException(
             "Invalid email or password"
         )
@@ -200,6 +195,7 @@ def refresh_access_token(
         user is None
         or user.isdeleted
         or not user.is_active
+        or not user.is_verified
     ):
         raise UnauthorizedException()
 
@@ -255,14 +251,14 @@ def verify_email(
 
     try:
         db.commit()
-
+    
     except Exception:
         db.rollback()
-
-        logger.exception(
-            "Failed to verify email."
-        )
 
         raise InternalServerException(
             "Failed to verify email."
         )
+    
+    return {
+        "message": "Email verified successfully."
+    }

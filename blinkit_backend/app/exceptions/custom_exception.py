@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from fastapi import status
 
+# Base exception used for creating all custom HTTP exceptions.
 class AppException(HTTPException):
     def __init__(self, status_code: int, detail: str):
         super().__init__(

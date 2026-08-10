@@ -11,6 +11,8 @@ from app.models.main_category import MainCategory
 
 from app.exceptions.custom_exception import NotFoundException, InternalServerException
 
+from app.core.logger import logger
+
 
 def get_category_by_id(db: Session, category_id: UUID):
     category=db.get(Category,category_id)
@@ -43,6 +45,10 @@ def add_category(
         )
 
         db.add(db_category)
+
+        # Temporary only for testing
+        raise Exception("Testing formatted logging")
+    
         db.commit()
         db.refresh(db_category)
 
@@ -53,6 +59,7 @@ def add_category(
 
     except Exception:
         db.rollback()
+        
         raise InternalServerException(
             "Failed to create category"
         )

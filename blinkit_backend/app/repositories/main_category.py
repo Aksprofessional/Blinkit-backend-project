@@ -12,6 +12,8 @@ from app.schemas.main_category import (
 )
 from app.exceptions.custom_exception import NotFoundException, InternalServerException, BadRequestException
 
+from app.core.logger import logger
+
 def get_main_category_by_id(
     db: Session,
     main_category_id: UUID,
@@ -93,11 +95,11 @@ def create_main_category(
 
     try:
 
-        db.add(...)
+        db.add(db_main_category)
 
         db.commit()
 
-        db.refresh(...)
+        db.refresh(db_main_category)
 
     except HTTPException:
         raise
@@ -105,7 +107,7 @@ def create_main_category(
     except Exception:
 
         db.rollback()
-
+        
         raise InternalServerException(
             "Failed to create main category."
         )
